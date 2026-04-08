@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Phân ca cho nhân viên</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+
+<body class="jsp-body">
+    <div class="schedule-shell">
+        <header class="hero-panel">
+            <div class="hero-copy">
+                <div class="eyebrow">
+                    <img th:src="@{/images/icons/icon11.svg}" alt="">
+                    Phân ca cho nhân viên
+                </div>
+                <h1 class="page-title">Phân ca cho nhân viên</h1>
+                <p class="page-subtitle">Chọn nhân viên, ca làm và ngày để phân công.</p>
+            </div>
+        </header>
+        <section class="surface-card">
+            <form th:action="${formAction}" method="post" class="form-grid">
+                <div class="field-block">
+                    <label class="field-label" for="userId">Nhân viên</label>
+                    <select id="userId" name="userId" required>
+                        <option value="">-- Chọn nhân viên --</option>
+                        <option th:each="user : ${users}" th:value="${user.userID}" th:text="${user.fullName}"></option>
+                    </select>
+                </div>
+                <div class="field-block">
+                    <label class="field-label" for="shiftId">Ca làm</label>
+                    <select id="shiftId" name="shiftId" required>
+                        <option value="">-- Chọn ca --</option>
+                        <option th:each="shift : ${shifts}" th:value="${shift.shiftID}" th:text="${shift.shiftName}">
+                        </option>
+                    </select>
+                </div>
+                <div class="field-block">
+                    <label class="field-label" for="workDate">Ngày làm</label>
+                    <input type="date" id="workDate" name="workDate" th:value="${workDate}" required>
+                </div>
+                <div class="field-block" style="grid-column: 1 / -1; display: flex; gap: 12px;">
+                    <button class="button" type="submit"><img class="icon-inline" th:src="@{/images/icons/icon16.svg}"
+                            alt="">Lưu</button>
+                    <a class="button-ghost" th:href="@{/admin/assigned-shifts}">Hủy</a>
+                </div>
+            </form>
+        </section>
+    </div>
+</body>
+
+</html>

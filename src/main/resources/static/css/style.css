@@ -1,3 +1,105 @@
+/* --- Tối giản, không bo góc, không gradient, vẫn có màu sắc rõ ràng --- */
+.button,
+.button-ghost,
+.button-quiet {
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  font-weight: 600;
+  border-width: 1px !important;
+  transition: none !important;
+}
+.button {
+  background: #1976d2 !important;
+  color: #fff !important;
+  border-color: #1976d2 !important;
+}
+.button-ghost {
+  background: #fff !important;
+  color: #1976d2 !important;
+  border-color: #1976d2 !important;
+}
+.button-quiet {
+  background: #f5f5f5 !important;
+  color: #333 !important;
+  border-color: #bbb !important;
+}
+.button-quiet--danger {
+  background: #fff !important;
+  color: #b00 !important;
+  border: 1px solid #b00 !important;
+}
+.badge,
+.badge--soft {
+  border-radius: 0 !important;
+  background: #e0e7ef !important;
+  color: #222 !important;
+  border: 1px solid #bfc8d7 !important;
+  font-weight: 600;
+}
+.badge--success {
+  background: #e0f7e9 !important;
+  color: #0f766e !important;
+  border: 1px solid #0f766e !important;
+}
+.avatar {
+  border-radius: 0 !important;
+  background: #e0e7ef !important;
+  color: #222 !important;
+  border: 1px solid #bfc8d7 !important;
+}
+.shift-pill {
+  border-radius: 0 !important;
+  background: #f5f5f5 !important;
+  color: #222 !important;
+  border: 1px solid #bbb !important;
+  margin-bottom: 2px;
+  padding: 2px 6px;
+  display: inline-block;
+}
+.shift-sang {
+  background: #e3f2fd !important;
+  color: #1976d2 !important;
+  border-color: #1976d2 !important;
+}
+.shift-chieu {
+  background: #fff8e1 !important;
+  color: #fbc02d !important;
+  border-color: #fbc02d !important;
+}
+.shift-toi {
+  background: #eceff1 !important;
+  color: #455a64 !important;
+  border-color: #455a64 !important;
+}
+.surface-card, .stat-card, .chart-card, .assignment-item, .list-layout, .grid-table {
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+.grid-table th, .grid-table td {
+  border: 1px solid #ddd !important;
+  padding: 6px 8px !important;
+}
+.grid-table {
+  border-collapse: collapse !important;
+  width: 100%;
+}
+.toolbar-actions .button, .toolbar-actions .button-ghost {
+  min-width: 110px;
+}
+.tab-link, .tab-link.is-active {
+  border-radius: 0 !important;
+  background: #fff !important;
+  color: #1976d2 !important;
+  border: 1px solid #1976d2 !important;
+  box-shadow: none !important;
+  font-weight: 600;
+}
+.tab-link.is-active {
+  background: #e3f2fd !important;
+}
+.helper-text, .section-note {
+  color: #888 !important;
+}
 :root {
   --bg: #f4f7fb;
   --panel: #ffffff;
