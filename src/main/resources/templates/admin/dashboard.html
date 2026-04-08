@@ -1,0 +1,12 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+    th:replace="~{fragments/Admin/admin :: layout(${pageTitle}, ~{::content}, ${sessionUser}, null)}">
+
+<th:block th:fragment="content">
+    <article class="content-card">
+        <h2>Xin chào, <span th:text="${sessionUser.fullName}">Admin</span></h2>
+        <p th:text="${pageDescription}">Chọn chức năng ở sidebar để bắt đầu quản lý hệ thống.</p>
+    </article>
+</th:block>
+
+</html>
