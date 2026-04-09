@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${pageTitle}">Gửi yêu cầu</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="stylesheet" th:href="@{/css/shared/layout.css}">
+    <link rel="stylesheet" th:href="@{/css/employee/employee.css}">
+</head>
+<body>
+    <div th:replace="~{fragments/employee/employee :: employeeLayout}"></div>
+
+    <div class="main-content">
+        <div class="container">
+            <h1>Gửi yêu cầu</h1>
+
+            <!-- Thông báo thành công -->
+            <div th:if="${successMessage}" class="alert alert-success">
+                <span th:text="${successMessage}"></span>
+            </div>
+
+            <!-- Thông báo lỗi -->
+            <div th:if="${errorMessage}" class="alert alert-error">
+                <span th:text="${errorMessage}"></span>
+            </div>
+
+            <form th:action="@{/requests/create}" method="post" th:object="${requestCreate}" class="form">
+                <div class="form-group">
+                    <label for="type">Loại yêu cầu:</label>
+                    <select th:field="*{type}" id="type" class="form-control">
+                        <option value="">-- Chọn loại yêu cầu --</option>
+                        <option value="LEAVE">Xin nghỉ</option>
+                        <option value="SHIFT_CHANGE">Đổi ca</option>
+                    </select>
+                    <div th:if="${#fields.hasErrors('type')}" th:errors="*{type}" class="error-message"></div>
+                </div>
+
+                <div class="form-group">
+                    <label for="fromDate">Từ ngày:</label>
+                    <input type="date" th:field="*{fromDate}" id="fromDate" class="form-control">
+                    <div th:if="${#fields.hasErrors('fromDate')}" th:errors="*{fromDate}" class="error-message"></div>
+                </div>
+
+                <div class="form-group">
+                    <label for="toDate">Đến ngày:</label>
+                    <input type="date" th:field="*{toDate}" id="toDate" class="form-control">
+                    <div th:if="${#fields.hasErrors('toDate')}" th:errors="*{toDate}" class="error-message"></div>
+                </div>
+
+                <div class="form-group">
+                    <label for="reason">Lý do:</label>
+                    <textarea th:field="*{reason}" id="reason" rows="4" class="form-control"
+                              placeholder="Nhập lý do của bạn..."></textarea>
+                    <div th:if="${#fields.hasErrors('reason')}" th:errors="*{reason}" class="error-message"></div>
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">Gửi yêu cầu</button>
+                    <a th:href="@{/requests/my}" class="btn btn-secondary">Quay lại</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</body>
+</html>

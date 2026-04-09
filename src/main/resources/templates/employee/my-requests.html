@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${pageTitle}">Yêu cầu của tôi</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="stylesheet" th:href="@{/css/shared/layout.css}">
+    <link rel="stylesheet" th:href="@{/css/employee/employee.css}">
+</head>
+<body>
+    <div th:replace="~{fragments/employee/employee :: employeeLayout}"></div>
+
+    <div class="main-content">
+        <div class="container">
+            <h1>Yêu cầu của tôi</h1>
+
+            <!-- Thông báo thành công -->
+            <div th:if="${successMessage}" class="alert alert-success">
+                <span th:text="${successMessage}"></span>
+            </div>
+
+            <div class="actions">
+                <a th:href="@{/requests/create}" class="btn btn-primary">Gửi yêu cầu mới</a>
+            </div>
+
+            <div class="table-container">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Loại yêu cầu</th>
+                            <th>Từ ngày</th>
+                            <th>Đến ngày</th>
+                            <th>Lý do</th>
+                            <th>Trạng thái</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="request : ${requests}" th:if="${requests != null and !requests.isEmpty()}">
+                            <td th:text="${request.requestId}"></td>
+                            <td>
+                                <span th:if="${request.type.name() == 'LEAVE'}">Xin nghỉ</span>
+                                <span th:if="${request.type.name() == 'SHIFT_CHANGE'}">Đổi ca</span>
+                            </td>
+                            <td th:text="${#temporals.format(request.fromDate, 'dd/MM/yyyy')}"></td>
+                            <td th:text="${#temporals.format(request.toDate, 'dd/MM/yyyy')}"></td>
+                            <td th:text="${request.reason}"></td>
+                            <td>
+                                <span th:class="'status ' + ${request.status.name().toLowerCase()}"
+                                      th:text="${request.status.name() == 'PENDING' ? 'Chờ duyệt' :
+                                               request.status.name() == 'APPROVED' ? 'Đã duyệt' :
+                                               request.status.name() == 'REJECTED' ? 'Từ chối' : request.status.name()}"></span>
+                            </td>
+                        </tr>
+                        <tr th:if="${requests == null or requests.isEmpty()}">
+                            <td colspan="6" class="no-data">Chưa có yêu cầu nào.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
