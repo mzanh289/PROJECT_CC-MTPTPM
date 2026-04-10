@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Phân ca cho nhân viên</title>
     <link rel="stylesheet" th:href="@{/css/style.css}">
+
     <style>
         body.jsp-body {
             background: #f7f8fa;
@@ -257,6 +258,7 @@
             </div>
         </header>
         <section class="surface-card">
+
             <!-- Flash Messages -->
             <div th:if="${success != null}" class="alert alert-success">
                 <img th:src="@{/images/icons/icon4.svg}" class="icon-inline" alt="">
@@ -276,6 +278,7 @@
                     </select>
                 </div>
                 <div class="field-block">
+
                     <div style="display: flex; justify-content: space-between; align-items: center;">
                         <label class="field-label" for="shiftId">Ca làm</label>
                         <button type="button" class="button-small" onclick="toggleQuickCreate()">
@@ -312,11 +315,11 @@
                         </button>
                     </div>
                 </div>
-
                 <div class="field-block">
                     <label class="field-label" for="workDate">Ngày làm</label>
                     <input type="date" id="workDate" name="workDate" th:value="${workDate}" required>
                 </div>
+
                 <div class="field-block" style="flex-direction: row; gap: 12px; justify-content: flex-end;">
                     <button class="button" type="submit"><img class="icon-inline" th:src="@{/images/icons/icon16.svg}"
                             alt="">Lưu</button>
@@ -378,4 +381,5 @@
     </script>
 </body>
 
+</html>
 </html>
