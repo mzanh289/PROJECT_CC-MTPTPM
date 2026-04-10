@@ -22,6 +22,8 @@
             <div class="hero-actions">
                 <a class="button" th:href="@{/admin/shifts/new}"><img class="icon-inline"
                         th:src="@{/images/icons/icon10.svg}" alt="">Tạo ca mới</a>
+                <a class="button-ghost" th:href="@{/admin/schedule}"><img class="icon-inline"
+                        th:src="@{/images/icons/icon1.svg}" alt="">Quay về lịch phân ca</a>
             </div>
         </header>
         <section class="surface-card">
@@ -40,11 +42,17 @@
                         <td th:text="${shift.startTime}">06:00</td>
                         <td th:text="${shift.endTime}">14:00</td>
                         <td>
-                            <a class="button-quiet" th:href="@{'/admin/shifts/edit/' + ${shift.shiftID}}"><img
+                            <a class="button-quiet" th:href="@{/admin/shifts/{id}/edit(id=${shift.shiftId})}"><img
                                     class="icon-inline" th:src="@{/images/icons/icon14.svg}" alt="">Sửa</a>
-                            <a class="button-quiet button-quiet--danger"
-                                th:href="@{'/admin/shifts/delete/' + ${shift.shiftID}}"><img class="icon-inline"
-                                    th:src="@{/images/icons/icon15.svg}" alt="">Xóa</a>
+                            <form th:action="@{/admin/shifts/{id}/delete(id=${shift.shiftId})}" method="post"
+                                style="display:inline;"
+                                onsubmit="return confirm('Bạn có chắc muốn xóa ca này không?');">
+
+                                <button type="submit" class="button-quiet button-quiet--danger">
+                                    <img class="icon-inline" th:src="@{/images/icons/icon15.svg}" alt="">
+                                    Xóa
+                                </button>
+                            </form>
                         </td>
                     </tr>
                     <tr th:if="${#lists.isEmpty(shifts)}">
