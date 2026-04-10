@@ -103,8 +103,10 @@ public class WorkScheduleController {
 
         // Tạo map ngày -> list schedule
         Map<LocalDate, List<WorkSchedule>> schedulesByDate = new LinkedHashMap<>();
+        List<LocalDate> weekDays = new ArrayList<>();
         for (int i = 0; i <= 6; i++) {
             LocalDate day = start.plusDays(i);
+            weekDays.add(day);
             List<WorkSchedule> daySchedules = new ArrayList<>();
             for (WorkSchedule ws : schedules) {
                 if (ws.getWorkDate().equals(day)) {
@@ -114,6 +116,8 @@ public class WorkScheduleController {
             schedulesByDate.put(day, daySchedules);
         }
 
+        model.addAttribute("targetDate", date);
+        model.addAttribute("weekDays", weekDays);
         model.addAttribute("weekStart", start);
         model.addAttribute("weekEnd", end);
         model.addAttribute("today", LocalDate.now());
