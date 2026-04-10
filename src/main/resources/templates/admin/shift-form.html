@@ -1,15 +1,18 @@
 <!DOCTYPE html>
-<html lang="vi">
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+    th:replace="~{fragments/Admin/admin :: layout(${formTitle}, ~{::content}, ${sessionUser}, null)}">
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title th:text="${formTitle}">Thêm/Sửa ca làm</title>
+<th:block th:fragment="content">
     <link rel="stylesheet" th:href="@{/css/style.css}">
-</head>
-
-<body class="jsp-body">
-
+    <style>
+        .role-content {
+            background: transparent !important;
+            border: none !important;
+            padding: 0 !important;
+            box-shadow: none !important;
+        }
+        .schedule-shell { max-width: 100%; margin: 0; padding: 0;}
+    </style>
     <div class="schedule-shell">
 
         <!-- HEADER -->
@@ -116,6 +119,5 @@
 
     </div>
 
-</body>
-
+</th:block>
 </html>
