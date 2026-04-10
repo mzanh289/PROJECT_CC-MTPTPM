@@ -1,0 +1,84 @@
+package CCPTMT.DoAn.QuanLyCaLam.controller;
+
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+
+import CCPTMT.DoAn.QuanLyCaLam.dto.SessionUserDto;
+import CCPTMT.DoAn.QuanLyCaLam.entity.Attendance;
+import CCPTMT.DoAn.QuanLyCaLam.entity.enums.Role;
+import CCPTMT.DoAn.QuanLyCaLam.service.AttendanceService;
+import jakarta.servlet.http.HttpSession;
+import lombok.RequiredArgsConstructor;
+
+@Controller
+@RequestMapping("/employee/attendance")
+@RequiredArgsConstructor
+public class EmployeeAttendanceController {
+
+    private final AttendanceService attendanceService;
+
+    @GetMapping
+    public String attendance(HttpSession session, Model model) {
+        SessionUserDto sessionUser = (SessionUserDto) session.getAttribute(LoginController.SESSION_USER_KEY);
+        if (sessionUser == null) {
+            return "redirect:/login";
+        }
+        if (sessionUser.getRole() == Role.ADMIN) {
+            return "redirect:/admin/dashboard";
+        }
+
+        Attendance todayAttendance = attendanceService.getTodayAttendance(sessionUser.getUserId());
+        boolean hasAssignedShift = attendanceService.hasAssignedShiftToday(sessionUser.getUserId());
+
+        boolean canCheckIn = hasAssignedShift && (todayAttendance == null || todayAttendance.getCheckIn() == null);
+        boolean canCheckOut = hasAssignedShift && todayAttendance != null && todayAttendance.getCheckIn() != null
+                && todayAttendance.getCheckOut() == null;
+
+        model.addAttribute("sessionUser", sessionUser);
+        model.addAttribute("pageTitle", "Chấm công");
+        model.addAttribute("todayAttendance", todayAttendance);
+        model.addAttribute("hasAssignedShift", hasAssignedShift);
+        model.addAttribute("canCheckIn", canCheckIn);
+        model.addAttribute("canCheckOut", canCheckOut);
+
+        return "employee/attendance";
+    }
+
+    @PostMapping("/checkin")
+    public String checkIn(HttpSession session, RedirectAttributes ra) {
+        SessionUserDto sessionUser = (SessionUserDto) session.getAttribute(LoginController.SESSION_USER_KEY);
+        if (sessionUser == null) {
+            return "redirect:/login";
+        }
+
+        try {
+            attendanceService.checkIn(sessionUser.getUserId());
+            ra.addFlashAttribute("success", "Check-in thành công.");
+        } catch (Exception e) {
+            ra.addFlashAttribute("error", e.getMessage());
+        }
+
+        return "redirect:/employee/attendance";
+    }
+
+    @PostMapping("/checkout")
+    public String checkOut(HttpSession session, RedirectAttributes ra) {
+        SessionUserDto sessionUser = (SessionUserDto) session.getAttribute(LoginController.SESSION_USER_KEY);
+        if (sessionUser == null) {
+            return "redirect:/login";
+        }
+
+        try {
+            attendanceService.checkOut(sessionUser.getUserId());
+            ra.addFlashAttribute("success", "Check-out thành công.");
+        } catch (Exception e) {
+            ra.addFlashAttribute("error", e.getMessage());
+        }
+
+        return "redirect:/employee/attendance";
+    }
+}
