@@ -1,7 +1,8 @@
 package CCPTMT.DoAn.QuanLyCaLam.controller;
 
 import CCPTMT.DoAn.QuanLyCaLam.dto.UserDTO;
-import CCPTMT.DoAn.QuanLyCaLam.entity.Users;
+import CCPTMT.DoAn.QuanLyCaLam.entity.User;
+import CCPTMT.DoAn.QuanLyCaLam.entity.enums.Role;
 import CCPTMT.DoAn.QuanLyCaLam.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -22,8 +23,8 @@ public class UserController {
      * Lấy tất cả người dùng
      */
     @GetMapping
-    public ResponseEntity<List<Users>> getAllUsers() {
-        List<Users> users = userRepository.findAll();
+    public ResponseEntity<List<User>> getAllUsers() {
+        List<User> users = userRepository.findAll();
         return ResponseEntity.ok(users);
     }
     
@@ -31,18 +32,16 @@ public class UserController {
      * Lấy người dùng theo ID
      */
     @GetMapping("/{id}")
-    public ResponseEntity<Users> getUserById(@PathVariable Integer id) {
-        Optional<Users> user = userRepository.findByUserId(id);
+    public ResponseEntity<User> getUserById(@PathVariable Integer id) {
+        Optional<User> user = userRepository.findByUserId(id);
         return user.map(ResponseEntity::ok)
                    .orElseGet(() -> ResponseEntity.notFound().build());
     }
     
-    /**
-     * Lấy người dùng theo Email
-     */
+
     @GetMapping("/email/{email}")
-    public ResponseEntity<Users> getUserByEmail(@PathVariable String email) {
-        Optional<Users> user = userRepository.findByEmail(email);
+    public ResponseEntity<User> getUserByEmail(@PathVariable String email) {
+        Optional<User> user = userRepository.findByEmail(email);
         return user.map(ResponseEntity::ok)
                    .orElseGet(() -> ResponseEntity.notFound().build());
     }
@@ -51,16 +50,20 @@ public class UserController {
      * Tạo người dùng mới
      */
     @PostMapping
-    public ResponseEntity<Users> createUser(@RequestBody UserDTO userDTO) {
-        Users user = new Users();
+    public ResponseEntity<User> createUser(@RequestBody UserDTO userDTO) {
+        User user = new User();
         user.setFullName(userDTO.getFullName());
         user.setEmail(userDTO.getEmail());
         user.setPassword(userDTO.getPassword());
-        user.setRole(userDTO.getRole());
+        if (userDTO.getRole() != null) {
+            user.setRole(Role.valueOf(userDTO.getRole().toUpperCase()));
+        } else {
+            user.setRole(Role.USER); // Default fallback
+        }
         user.setPhone(userDTO.getPhone());
         user.setStatus(userDTO.getStatus() != null ? userDTO.getStatus() : true);
         
-        Users createdUser = userRepository.save(user);
+        User createdUser = userRepository.save(user);
         return ResponseEntity.status(HttpStatus.CREATED).body(createdUser);
     }
     
@@ -68,19 +71,21 @@ public class UserController {
      * Cập nhật thông tin người dùng
      */
     @PutMapping("/{id}")
-    public ResponseEntity<Users> updateUser(@PathVariable Integer id, @RequestBody UserDTO userDTO) {
-        Optional<Users> existingUser = userRepository.findByUserId(id);
+    public ResponseEntity<User> updateUser(@PathVariable Integer id, @RequestBody UserDTO userDTO) {
+        Optional<User> existingUser = userRepository.findByUserId(id);
         
         if (existingUser.isPresent()) {
-            Users user = existingUser.get();
+            User user = existingUser.get();
             user.setFullName(userDTO.getFullName());
             user.setEmail(userDTO.getEmail());
             user.setPassword(userDTO.getPassword());
-            user.setRole(userDTO.getRole());
+            if (userDTO.getRole() != null) {
+                user.setRole(Role.valueOf(userDTO.getRole().toUpperCase()));
+            }
             user.setPhone(userDTO.getPhone());
             user.setStatus(userDTO.getStatus());
             
-            Users updatedUser = userRepository.save(user);
+            User updatedUser = userRepository.save(user);
             return ResponseEntity.ok(updatedUser);
         } else {
             return ResponseEntity.notFound().build();
@@ -92,7 +97,7 @@ public class UserController {
      */
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteUser(@PathVariable Integer id) {
-        Optional<Users> user = userRepository.findByUserId(id);
+        Optional<User> user = userRepository.findByUserId(id);
         
         if (user.isPresent()) {
             userRepository.delete(user.get());
