@@ -1,0 +1,12 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+    th:replace="~{fragments/employee/employee :: layout(${pageTitle}, ~{::content}, ${sessionUser})}">
+
+<th:block th:fragment="content">
+    <article class="content-card">
+        <h2>Xin chào, <span th:text="${sessionUser.fullName}">Nhân viên</span></h2>
+        <p th:text="${pageDescription}">Theo dõi lịch làm, chấm công và gửi yêu cầu ngay tại đây.</p>
+    </article>
+</th:block>
+
+</html>
