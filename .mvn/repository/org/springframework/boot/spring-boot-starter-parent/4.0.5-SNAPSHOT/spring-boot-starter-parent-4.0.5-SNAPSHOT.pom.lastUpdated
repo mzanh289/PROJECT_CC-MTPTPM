@@ -1,0 +1,4 @@
+#NOTE: This is a Maven Resolver internal implementation file, its format can be changed without prior notice.
+#Tue Apr 07 14:38:41 ICT 2026
+@default-spring-snapshots-https\://repo.spring.io/snapshot/.lastUpdated=1775547521626
+https\://repo.spring.io/snapshot/.error=Could not transfer artifact org.springframework.boot\:spring-boot-starter-parent\:pom\:4.0.5-SNAPSHOT from/to spring-snapshots (https\://repo.spring.io/snapshot)\: D\:\\ACER\\H\u1ECCC PH\u1EA6N\\N\u0103m 3_HK2\\CC&MT\\PROJECT\\PROJECT_CC-MTPTPM\\.mvn\\repository\\org\\springframework\\boot\\spring-boot-starter-parent\\4.0.5-SNAPSHOT\\spring-boot-starter-parent-4.0.5-SNAPSHOT.pom.10580475746991278374.tmp.6119715789337072520.tmp

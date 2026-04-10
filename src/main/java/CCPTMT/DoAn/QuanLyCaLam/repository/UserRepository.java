@@ -1,15 +1,16 @@
 package CCPTMT.DoAn.QuanLyCaLam.repository;
 
-import CCPTMT.DoAn.QuanLyCaLam.entity.Users;
+import java.util.Optional;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import java.util.Optional;
+import CCPTMT.DoAn.QuanLyCaLam.entity.User;
 
 @Repository
-public interface UserRepository extends JpaRepository<Users, Integer> {
-    
-    Optional<Users> findByEmail(String email);
-    
-    Optional<Users> findByUserId(Integer userId);
+public interface UserRepository extends JpaRepository<User, Integer> {
+
+    Optional<User> findByEmail(String email);
+
+    Optional<User> findByUserId(Integer userId);
 }

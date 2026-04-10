@@ -1,9 +1,9 @@
 package CCPTMT.DoAn.QuanLyCaLam.entity;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 
-import CCPTMT.DoAn.QuanLyCaLam.entity.enums.AttendanceStatus;
+import CCPTMT.DoAn.QuanLyCaLam.entity.enums.RequestStatus;
+import CCPTMT.DoAn.QuanLyCaLam.entity.enums.RequestType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -15,8 +15,6 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
-import jakarta.persistence.UniqueConstraint;
-
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -29,32 +27,32 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "attendance", uniqueConstraints = {
-        @UniqueConstraint(name = "uk_attendance_user_date", columnNames = { "UserID", "WorkDate" })
-})
-public class Attendance {
+@Table(name = "requests")
+public class Request {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "AttendanceID")
-    private Integer attendanceId;
+    @Column(name = "RequestID")
+    private Integer requestId;
 
-    // ====== MERGED PART (User relation) ======
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "UserID", nullable = false)
-    private User user; // nếu project bạn dùng Users thì đổi lại Users
+    private User user;
 
-    @Column(name = "WorkDate", nullable = false)
-    private LocalDate workDate;
-
-    @Column(name = "CheckIn")
-    private LocalDateTime checkIn;
-
-    @Column(name = "CheckOut")
-    private LocalDateTime checkOut;
-
-    // ====== MERGED STATUS ======
     @Enumerated(EnumType.STRING)
-    @Column(name = "Status", nullable = false, length = 20, columnDefinition = "nvarchar(20)")
-    private AttendanceStatus status;
+    @Column(name = "Type", nullable = false, length = 20, columnDefinition = "nvarchar(20)")
+    private RequestType type;
+
+    @Column(name = "FromDate", nullable = false)
+    private LocalDate fromDate;
+
+    @Column(name = "ToDate", nullable = false)
+    private LocalDate toDate;
+
+    @Column(name = "Reason", nullable = false, columnDefinition = "nvarchar(500)")
+    private String reason;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "Status", nullable = false, length = 20)
+    private RequestStatus status;
 }
