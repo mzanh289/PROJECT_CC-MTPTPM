@@ -4,10 +4,12 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
 
 import CCPTMT.DoAn.QuanLyCaLam.entity.User;
 import CCPTMT.DoAn.QuanLyCaLam.entity.enums.Role;
 
+@Repository
 public interface UserRepository extends JpaRepository<User, Integer> {
 
     Optional<User> findByEmail(String email);
@@ -25,4 +27,6 @@ public interface UserRepository extends JpaRepository<User, Integer> {
     List<User> findAllByRoleAndStatusOrderByUserIdDesc(Role role, Boolean status);
 
     Optional<User> findByUserIdAndRole(Integer userId, Role role);
+
+    Optional<User> findByUserId(Integer userId);
 }

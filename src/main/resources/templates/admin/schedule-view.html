@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${viewTitle != null ? viewTitle : 'Lịch phân ca'}">Lịch phân ca</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <style>
+        body.jsp-body {
+            background: #f7f8fa;
+            font-family: 'Segoe UI', Arial, sans-serif;
+        }
+
+        .schedule-shell {
+            max-width: 1200px;
+            margin: 20px auto;
+            background: #fff;
+            border-radius: 10px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.07);
+            padding: 0 0 32px 0;
+        }
+
+        .hero-panel {
+            background: #fff;
+            border-bottom: 1px solid #e5e7eb;
+            border-radius: 10px 10px 0 0;
+            padding: 24px 32px;
+        }
+
+        .hero-copy .eyebrow {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #3b82f6;
+            font-weight: 600;
+            font-size: 1rem;
+            margin-bottom: 8px;
+        }
+
+        .page-title {
+            font-size: 2rem;
+            font-weight: 700;
+            margin: 0 0 8px 0;
+            color: #22223b;
+        }
+
+        .page-subtitle {
+            color: #6b7280;
+            font-size: 1rem;
+            margin-bottom: 0;
+        }
+
+        .hero-actions {
+            display: flex;
+            gap: 12px;
+            margin-top: 16px;
+        }
+
+        .surface-card {
+            padding: 24px 32px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .tab-nav {
+            display: flex;
+            gap: 8px;
+        }
+
+        .tab-link {
+            padding: 8px 16px;
+            border-radius: 6px;
+            color: #6b7280;
+            text-decoration: none;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s;
+        }
+
+        .tab-link:hover {
+            background: #f3f4f6;
+            color: #374151;
+        }
+
+        .tab-link.is-active {
+            background: #eff6ff;
+            color: #3b82f6;
+        }
+
+        .view-toggle {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 20px;
+        }
+
+        .view-btn {
+            padding: 8px 16px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            background: #fff;
+            color: #6b7280;
+            cursor: pointer;
+            font-weight: 500;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .view-btn:hover {
+            border-color: #3b82f6;
+            color: #3b82f6;
+        }
+
+        .view-btn.is-active {
+            background: #3b82f6;
+            border-color: #3b82f6;
+            color: #fff;
+        }
+
+        .date-nav {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+            margin-bottom: 24px;
+        }
+
+        .date-nav-btn {
+            padding: 8px 16px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            background: #fff;
+            color: #374151;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .date-nav-btn:hover {
+            background: #f3f4f6;
+        }
+
+        .current-date {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #22223b;
+            min-width: 280px;
+            text-align: center;
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin: 0 0 8px 0;
+            color: #22223b;
+        }
+
+        .section-subtitle {
+            color: #6b7280;
+            font-size: 1rem;
+            margin-bottom: 20px;
+        }
+
+        /* Daily View */
+        .daily-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 16px;
+        }
+
+        .daily-table th,
+        .daily-table td {
+            padding: 12px 16px;
+            text-align: left;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .daily-table th {
+            background: #f9fafb;
+            font-weight: 600;
+            color: #374151;
+        }
+
+        .daily-table tr:hover {
+            background: #f9fafb;
+        }
+
+        .shift-badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+
+        .shift-badge--morning {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .shift-badge--afternoon {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
+        .shift-badge--evening {
+            background: #ede9fe;
+            color: #5b21b6;
+        }
+
+        /* Weekly View */
+        .week-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 12px;
+            margin-top: 16px;
+        }
+
+        .week-day-card {
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .week-day-header {
+            background: #f9fafb;
+            padding: 12px;
+            text-align: center;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .week-day-name {
+            font-weight: 600;
+            color: #374151;
+            font-size: 0.875rem;
+        }
+
+        .week-day-date {
+            color: #6b7280;
+            font-size: 0.875rem;
+        }
+
+        .week-day-header.is-today {
+            background: #eff6ff;
+        }
+
+        .week-day-header.is-today .week-day-date {
+            color: #3b82f6;
+            font-weight: 600;
+        }
+
+        .week-day-body {
+            padding: 12px;
+            min-height: 150px;
+        }
+
+        .shift-item {
+            padding: 8px;
+            border-radius: 6px;
+            margin-bottom: 8px;
+            font-size: 0.875rem;
+        }
+
+        .shift-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .shift-item--morning {
+            background: #fef3c7;
+            border-left: 3px solid #f59e0b;
+        }
+
+        .shift-item--afternoon {
+            background: #dbeafe;
+            border-left: 3px solid #3b82f6;
+        }
+
+        .shift-item--evening {
+            background: #ede9fe;
+            border-left: 3px solid #8b5cf6;
+        }
+
+        .shift-employee {
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 4px;
+        }
+
+        .shift-time {
+            color: #6b7280;
+            font-size: 0.75rem;
+        }
+
+        .no-shift {
+            color: #9ca3af;
+            font-size: 0.875rem;
+            text-align: center;
+            padding: 20px 0;
+        }
+
+        /* Employee View */
+        .employee-header {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 20px;
+            background: #f9fafb;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .employee-avatar {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: #3b82f6;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        .employee-info h2 {
+            margin: 0 0 4px 0;
+            font-size: 1.25rem;
+            color: #22223b;
+        }
+
+        .employee-info p {
+            margin: 0;
+            color: #6b7280;
+        }
+
+        .employee-schedule-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .employee-schedule-table th,
+        .employee-schedule-table td {
+            padding: 12px 16px;
+            text-align: left;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .employee-schedule-table th {
+            background: #f9fafb;
+            font-weight: 600;
+            color: #374151;
+        }
+
+        .action-btn {
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .action-btn--danger {
+            color: #dc2626;
+            background: #fee2e2;
+        }
+
+        .action-btn--danger:hover {
+            background: #fecaca;
+        }
+
+        .helper-text {
+            color: #9ca3af;
+            font-size: 0.875rem;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #6b7280;
+        }
+
+        @media (max-width: 900px) {
+            .week-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 600px) {
+            .schedule-shell,
+            .hero-panel,
+            .surface-card {
+                padding: 16px !important;
+            }
+
+            .week-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .view-toggle {
+                flex-wrap: wrap;
+            }
+        }
+    </style>
+</head>
+
+<body class="jsp-body">
+    <div class="schedule-shell">
+        <header class="hero-panel">
+            <div class="hero-copy">
+                <div class="eyebrow">
+                    <img th:src="@{/images/icons/icon1.svg}" alt="">
+                    Quản lý phân ca
+                </div>
+                <h1 class="page-title" th:text="${viewTitle != null ? viewTitle : 'Lịch phân ca'}">Lịch phân ca</h1>
+                <p class="page-subtitle">Xem và quản lý lịch phân ca của nhân viên theo ngày hoặc tuần.</p>
+            </div>
+            <div class="hero-actions">
+                <nav class="tab-nav">
+                    <a class="tab-link" th:href="@{/admin/schedule/assign}">
+                        <img th:src="@{/images/icons/icon11.svg}" alt="">Phân ca
+                    </a>
+                    <a class="tab-link is-active" th:href="@{/admin/schedule/daily}">
+                        <img th:src="@{/images/icons/icon1.svg}" alt="">Xem lịch
+                    </a>
+                </nav>
+            </div>
+        </header>
+
+        <!-- View Toggle -->
+        <div class="surface-card" th:if="${viewType == null || viewType == 'daily' || viewType == 'weekly'}">
+            <div class="view-toggle">
+                <a th:classappend="${viewType == 'daily' ? 'is-active' : ''}" class="view-btn"
+                    th:href="@{/admin/schedule/daily(date=${targetDate})}">
+                    <img th:src="@{/images/icons/icon1.svg}" alt="">Theo ngày
+                </a>
+                <a th:classappend="${viewType == 'weekly' ? 'is-active' : ''}" class="view-btn"
+                    th:href="@{/admin/schedule/weekly(date=${targetDate})}">
+                    <img th:src="@{/images/icons/icon2.svg}" alt="">Theo tuần
+                </a>
+            </div>
+
+            <!-- Date Navigation -->
+            <div class="date-nav" th:if="${viewType == 'daily' || viewType == 'weekly'}">
+                <a class="date-nav-btn"
+                    th:if="${viewType == 'daily'}"
+                    th:href="@{/admin/schedule/daily(date=${targetDate.minusDays(1)})}">← Trước</a>
+                <a class="date-nav-btn"
+                    th:if="${viewType == 'weekly'}"
+                    th:href="@{/admin/schedule/weekly(date=${targetDate.minusDays(7)})}">← Trước</a>
+                <span class="current-date" th:if="${viewType == 'daily'}"
+                    th:text="${#temporals.format(targetDate, 'EEEE, dd/MM/yyyy')}">Thứ Hai, 01/01/2024</span>
+                <span class="current-date" th:if="${viewType == 'weekly'}"
+                    th:text="${#temporals.format(weekStart, 'dd/MM/yyyy')} + ' - ' + ${#temporals.format(weekEnd, 'dd/MM/yyyy')}">01/01 - 07/01/2024</span>
+                <a class="date-nav-btn"
+                    th:if="${viewType == 'daily'}"
+                    th:href="@{/admin/schedule/daily(date=${targetDate.plusDays(1)})}">Sau →</a>
+                <a class="date-nav-btn"
+                    th:if="${viewType == 'weekly'}"
+                    th:href="@{/admin/schedule/weekly(date=${targetDate.plusDays(7)})}">Sau →</a>
+                <a class="date-nav-btn" th:if="${viewType == 'daily'}" th:href="@{/admin/schedule/daily}">Hôm nay</a>
+                <a class="date-nav-btn" th:if="${viewType == 'weekly'}" th:href="@{/admin/schedule/weekly}">Hôm nay</a>
+            </div>
+
+            <!-- Daily View -->
+            <div th:if="${viewType == 'daily'}" class="daily-view">
+                <h2 class="section-title">Lịch phân ca ngày <span th:text="${#temporals.format(targetDate, 'dd/MM/yyyy')}"></span></h2>
+                <p class="section-subtitle" th:text="${schedules.size()} + ' nhân viên được phân ca'">0 nhân viên được phân ca</p>
+
+                <table class="daily-table" th:if="${not #lists.isEmpty(schedules)}">
+                    <thead>
+                        <tr>
+                            <th>Nhân viên</th>
+                            <th>Email</th>
+                            <th>Ca làm</th>
+                            <th>Giờ</th>
+                            <th>Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="schedule : ${schedules}">
+                            <td>
+                                <strong th:text="${schedule.user.fullName}">Tên nhân viên</strong>
+                            </td>
+                            <td th:text="${schedule.user.email}">email@example.com</td>
+                            <td>
+                                <span class="shift-badge" th:text="${schedule.shift.shiftName}">Ca sáng</span>
+                            </td>
+                            <td th:text="${schedule.shift.startTime} + ' - ' + ${schedule.shift.endTime}">06:00 - 14:00</td>
+                            <td>
+                                <a class="action-btn action-btn--danger"
+                                    th:href="@{/admin/schedule/delete/{id}(id=${schedule.scheduleId})}">Xóa</a>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div th:if="${#lists.isEmpty(schedules)}" class="empty-state">
+                    <p>Không có nhân viên nào được phân ca trong ngày này.</p>
+                    <br>
+                    <a class="view-btn is-active" th:href="@{/admin/schedule/assign}">Phân ca ngay</a>
+                </div>
+            </div>
+
+            <!-- Weekly View -->
+            <div th:if="${viewType == 'weekly'}" class="weekly-view">
+                <h2 class="section-title">Lịch phân ca tuần <span
+                        th:text="${#temporals.format(weekStart, 'dd/MM/yyyy')} + ' - ' + ${#temporals.format(weekEnd, 'dd/MM/yyyy')}"></span>
+                </h2>
+                <p class="section-subtitle" th:text="${schedules.size()} + ' bản ghi phân ca'">0 bản ghi phân ca</p>
+
+                <div class="week-grid">
+                    <div th:each="day : ${weekDays}" class="week-day-card">
+                        <div class="week-day-header"
+                            th:classappend="${day == today} ? 'is-today'">
+                            <div class="week-day-name"
+                                th:text="${#temporals.dayOfWeekName(day)}">Thứ Hai</div>
+                            <div class="week-day-date"
+                                th:text="${#temporals.format(day, 'dd/MM')}">01/01</div>
+                        </div>
+                        <div class="week-day-body">
+                            <th:block
+                                th:with="daySchedules=${schedulesByDate != null ? schedulesByDate.get(day) : null}">
+                                <th:block th:if="${daySchedules != null and not #lists.isEmpty(daySchedules)}">
+                                    <div th:each="schedule : ${daySchedules}" class="shift-item"
+                                        th:classappend="${schedule.shift.shiftName.toLowerCase().contains('sáng')} ? 'shift-item--morning' : (${schedule.shift.shiftName.toLowerCase().contains('chiều')} ? 'shift-item--afternoon' : 'shift-item--evening')">
+                                        <div class="shift-employee" th:text="${schedule.user.fullName}">Nhân viên</div>
+                                        <div class="shift-time" th:text="${schedule.shift.shiftName} + ' | ' + ${schedule.shift.startTime} + ' - ' + ${schedule.shift.endTime}">Ca sáng | 06:00 - 14:00</div>
+                                    </div>
+                                </th:block>
+                                <div th:if="${daySchedules == null or #lists.isEmpty(daySchedules)}" class="no-shift">
+                                    Không có ca
+                                </div>
+                            </th:block>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Employee Individual View -->
+        <div th:if="${viewType == 'employee'}" class="surface-card">
+            <div class="employee-header">
+                <div class="employee-avatar"
+                    th:text="${#strings.substring(employee.fullName, 0, 1)}">N</div>
+                <div class="employee-info">
+                    <h2 th:text="${employee.fullName}">Tên nhân viên</h2>
+                    <p th:text="${employee.email}">email@example.com</p>
+                    <p th:text="${employee.role}">Role</p>
+                </div>
+            </div>
+
+            <h2 class="section-title">Lịch làm việc của <span th:text="${employee.fullName}">Nhân viên</span></h2>
+            <p class="section-subtitle" th:text="${schedules.size()} + ' ngày được phân công'">0 ngày được phân công</p>
+
+            <table class="employee-schedule-table" th:if="${not #lists.isEmpty(schedules)}">
+                <thead>
+                    <tr>
+                        <th>Ngày</th>
+                        <th>Ca làm</th>
+                        <th>Giờ bắt đầu</th>
+                        <th>Giờ kết thúc</th>
+                        <th>Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="schedule : ${schedules}">
+                        <td th:text="${#temporals.format(schedule.workDate, 'EEEE, dd/MM/yyyy')}">Thứ Hai, 01/01/2024</td>
+                        <td>
+                            <span class="shift-badge" th:text="${schedule.shift.shiftName}">Ca sáng</span>
+                        </td>
+                        <td th:text="${schedule.shift.startTime}">06:00</td>
+                        <td th:text="${schedule.shift.endTime}">14:00</td>
+                        <td>
+                            <a class="action-btn action-btn--danger"
+                                th:href="@{/admin/schedule/delete/{id}(id=${schedule.scheduleId})}">Xóa</a>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div th:if="${#lists.isEmpty(schedules)}" class="empty-state">
+                <p>Nhân viên này chưa có lịch phân ca nào.</p>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="surface-card">
+            <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+                <a class="view-btn" th:href="@{/admin/schedule/assign}">
+                    <img th:src="@{/images/icons/icon11.svg}" alt="">Phân ca mới
+                </a>
+                <a class="view-btn" th:href="@{/admin/shifts}">
+                    <img th:src="@{/images/icons/icon10.svg}" alt="">Quản lý ca làm
+                </a>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

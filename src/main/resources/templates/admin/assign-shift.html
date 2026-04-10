@@ -1,11 +1,248 @@
 <!DOCTYPE html>
-<html lang="vi">
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Phân ca cho nhân viên</title>
     <link rel="stylesheet" th:href="@{/css/style.css}">
+
+    <style>
+        body.jsp-body {
+            background: #f7f8fa;
+            font-family: 'Segoe UI', Arial, sans-serif;
+        }
+
+        .schedule-shell {
+            max-width: 600px;
+            margin: 40px auto;
+            background: #fff;
+            border-radius: 10px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.07);
+            padding: 0 0 32px 0;
+        }
+
+        .hero-panel {
+            background: #fff;
+            border-bottom: 1px solid #e5e7eb;
+            border-radius: 10px 10px 0 0;
+            padding: 32px 32px 16px 32px;
+            text-align: center;
+        }
+
+        .hero-copy .eyebrow {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #3b82f6;
+            font-weight: 600;
+            font-size: 1rem;
+            margin-bottom: 8px;
+        }
+
+        .page-title {
+            font-size: 2rem;
+            font-weight: 700;
+            margin: 0 0 8px 0;
+            color: #22223b;
+        }
+
+        .page-subtitle {
+            color: #6b7280;
+            font-size: 1rem;
+            margin-bottom: 0;
+        }
+
+        .surface-card {
+            padding: 32px;
+        }
+
+        .alert {
+            padding: 12px 16px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .alert-success {
+            background: #d1fae5;
+            color: #065f46;
+            border: 1px solid #a7f3d0;
+        }
+
+        .alert-error {
+            background: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #fecaca;
+        }
+
+        .form-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .field-block {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .field-label {
+            font-weight: 500;
+            color: #374151;
+            margin-bottom: 2px;
+        }
+
+        select,
+        input[type="date"],
+        input[type="text"],
+        input[type="time"] {
+            padding: 8px 12px;
+            border: 1px solid #d1d5db;
+            border-radius: 5px;
+            background: #f9fafb;
+            font-size: 1rem;
+            transition: border-color 0.2s;
+        }
+
+        select:focus,
+        input[type="date"]:focus,
+        input[type="text"]:focus,
+        input[type="time"]:focus {
+            border-color: #3b82f6;
+            outline: none;
+        }
+
+        .button {
+            background: #3b82f6;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            padding: 10px 20px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: background 0.2s;
+            text-decoration: none;
+        }
+
+        .button:hover {
+            background: #2563eb;
+        }
+
+        .button-ghost {
+            background: none;
+            color: #3b82f6;
+            border: 1px solid #3b82f6;
+            border-radius: 5px;
+            padding: 10px 20px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s, color 0.2s;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .button-ghost:hover {
+            background: #e0e7ff;
+            color: #1e40af;
+        }
+
+        .button-small {
+            background: #10b981;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            padding: 6px 12px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .button-small:hover {
+            background: #059669;
+        }
+
+        .icon-inline {
+            width: 18px;
+            height: 18px;
+        }
+
+        .quick-create {
+            background: #f9fafb;
+            border: 1px dashed #d1d5db;
+            border-radius: 6px;
+            padding: 16px;
+            margin-top: 8px;
+        }
+
+        .quick-create-title {
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .quick-create-fields {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr auto;
+            gap: 8px;
+            align-items: end;
+        }
+
+        .quick-create-fields .field-block {
+            margin: 0;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #e5e7eb;
+        }
+
+        .nav-link {
+            color: #6b7280;
+            text-decoration: none;
+            font-size: 0.875rem;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .nav-link:hover {
+            color: #3b82f6;
+        }
+
+        @media (max-width: 600px) {
+            .schedule-shell,
+            .hero-panel,
+            .surface-card {
+                padding: 16px !important;
+            }
+
+            .quick-create-fields {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
 </head>
 
 <body class="jsp-body">
@@ -21,6 +258,17 @@
             </div>
         </header>
         <section class="surface-card">
+
+            <!-- Flash Messages -->
+            <div th:if="${success != null}" class="alert alert-success">
+                <img th:src="@{/images/icons/icon4.svg}" class="icon-inline" alt="">
+                <span th:text="${success}">Thành công!</span>
+            </div>
+            <div th:if="${error != null}" class="alert alert-error">
+                <img th:src="@{/images/icons/icon15.svg}" class="icon-inline" alt="">
+                <span th:text="${error}">Có lỗi xảy ra!</span>
+            </div>
+
             <form th:action="${formAction}" method="post" class="form-grid">
                 <div class="field-block">
                     <label class="field-label" for="userId">Nhân viên</label>
@@ -30,25 +278,108 @@
                     </select>
                 </div>
                 <div class="field-block">
-                    <label class="field-label" for="shiftId">Ca làm</label>
+
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <label class="field-label" for="shiftId">Ca làm</label>
+                        <button type="button" class="button-small" onclick="toggleQuickCreate()">
+                            <img th:src="@{/images/icons/icon10.svg}" class="icon-inline" alt="">Tạo ca nhanh
+                        </button>
+                    </div>
                     <select id="shiftId" name="shiftId" required>
                         <option value="">-- Chọn ca --</option>
-                        <option th:each="shift : ${shifts}" th:value="${shift.shiftId}" th:text="${shift.shiftName}">
-                        </option>
+                        <option th:each="shift : ${shifts}" th:value="${shift.shiftId}"
+                            th:text="${shift.shiftName} + ' (' + ${shift.startTime} + ' - ' + ${shift.endTime} + ')'"></option>
                     </select>
+                </div>
+
+                <!-- Quick Create Shift Section -->
+                <div id="quickCreateSection" class="quick-create" style="display: none;">
+                    <div class="quick-create-title">
+                        <img th:src="@{/images/icons/icon10.svg}" class="icon-inline" alt="">Tạo ca làm mới
+                    </div>
+                    <div class="quick-create-fields">
+                        <div class="field-block">
+                            <label class="field-label" for="newShiftName">Tên ca</label>
+                            <input type="text" id="newShiftName" placeholder="VD: Ca đêm">
+                        </div>
+                        <div class="field-block">
+                            <label class="field-label" for="newStartTime">Giờ bắt đầu</label>
+                            <input type="time" id="newStartTime">
+                        </div>
+                        <div class="field-block">
+                            <label class="field-label" for="newEndTime">Giờ kết thúc</label>
+                            <input type="time" id="newEndTime">
+                        </div>
+                        <button type="button" class="button-small" onclick="createShiftQuick()">
+                            <img th:src="@{/images/icons/icon16.svg}" class="icon-inline" alt="">Thêm
+                        </button>
+                    </div>
                 </div>
                 <div class="field-block">
                     <label class="field-label" for="workDate">Ngày làm</label>
                     <input type="date" id="workDate" name="workDate" th:value="${workDate}" required>
                 </div>
-                <div class="field-block" style="grid-column: 1 / -1; display: flex; gap: 12px;">
+
+                <div class="field-block" style="flex-direction: row; gap: 12px; justify-content: flex-end;">
                     <button class="button" type="submit"><img class="icon-inline" th:src="@{/images/icons/icon16.svg}"
                             alt="">Lưu</button>
-                    <a class="button-ghost" th:href="@{/admin/assigned-shifts}">Hủy</a>
+                    <a class="button-ghost" th:href="@{/admin/schedule/daily}">Hủy</a>
                 </div>
             </form>
+
+            <div class="nav-links">
+                <a class="nav-link" th:href="@{/admin/schedule/daily}">
+                    <img th:src="@{/images/icons/icon1.svg}" class="icon-inline" alt="">Xem lịch theo ngày
+                </a>
+                <a class="nav-link" th:href="@{/admin/schedule/weekly}">
+                    <img th:src="@{/images/icons/icon2.svg}" class="icon-inline" alt="">Xem lịch theo tuần
+                </a>
+                <a class="nav-link" th:href="@{/admin/shifts}">
+                    <img th:src="@{/images/icons/icon10.svg}" class="icon-inline" alt="">Quản lý ca làm
+                </a>
+            </div>
         </section>
     </div>
+
+    <script>
+        function toggleQuickCreate() {
+            var section = document.getElementById('quickCreateSection');
+            section.style.display = section.style.display === 'none' ? 'block' : 'none';
+        }
+
+        function createShiftQuick() {
+            var shiftName = document.getElementById('newShiftName').value;
+            var startTime = document.getElementById('newStartTime').value;
+            var endTime = document.getElementById('newEndTime').value;
+
+            if (!shiftName || !startTime || !endTime) {
+                alert('Vui lòng điền đầy đủ thông tin ca làm!');
+                return;
+            }
+
+            var form = document.createElement('form');
+            form.method = 'POST';
+            form.action = '/admin/shifts/save';
+
+            var fields = [
+                { name: 'shiftName', value: shiftName },
+                { name: 'startTime', value: startTime },
+                { name: 'endTime', value: endTime }
+            ];
+
+            fields.forEach(function(field) {
+                var input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = field.name;
+                input.value = field.value;
+                form.appendChild(input);
+            });
+
+            document.body.appendChild(form);
+            form.submit();
+        }
+    </script>
 </body>
 
+</html>
 </html>

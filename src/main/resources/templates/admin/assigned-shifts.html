@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${pageTitle}">Lịch phân ca</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+
+<body class="jsp-body">
+    <div class="schedule-shell">
+        <header class="hero-panel">
+            <div class="hero-copy">
+                <div class="eyebrow">
+                    <img th:src="@{/images/icons/icon1.svg}" alt="">
+                    Quản lý phân ca
+                </div>
+                <h1 class="page-title" th:text="${pageTitle}">Lịch phân ca nhân viên</h1>
+                <p class="page-subtitle" th:text="${pageSubtitle}">Quản lý, phân công và theo dõi lịch làm việc của nhân
+                    viên theo ngày hoặc tuần.</p>
+            </div>
+            <div class="hero-actions">
+                <nav class="tab-nav">
+                    <a class="tab-link" th:href="${assignShiftsUrl}">
+                        <img th:src="@{/images/icons/icon0.svg}" alt="">
+                        Phân ca
+                    </a>
+                    <a class="tab-link is-active" th:href="${viewSchedulesUrl}">
+                        <img th:src="@{/images/icons/icon1.svg}" alt="">
+                        Xem lịch đã phân
+                    </a>
+                </nav>
+            </div>
+        </header>
+        <!-- Thanh thao tác nhanh -->
+        <div class="toolbar-actions" style="display:flex;gap:10px;margin:16px 0;">
+            <a class="button" th:href="@{/admin/shifts/new}"><img class="icon-inline"
+                    th:src="@{/images/icons/icon10.svg}" alt="">+ Tạo ca mới</a>
+            <a class="button" th:href="@{/admin/schedule/assign}"><img class="icon-inline"
+                    th:src="@{/images/icons/icon11.svg}" alt="">Phân ca</a>
+            <button class="button" type="button" onclick="location.reload()"><img class="icon-inline"
+                    th:src="@{/images/icons/icon13.svg}" alt="">Làm mới</button>
+            <a class="button-ghost" th:href="${exportUrl}"><img class="icon-inline" th:src="@{/images/icons/icon9.svg}"
+                    alt="">Xuất Excel</a>
+        </div>
+
+        <section class="surface-card">
+            <div class="summary-grid">
+                <article class="stat-card">
+                    <div class="stat-head">
+                        <div class="stat-icon icon-blue"><img th:src="@{/images/icons/icon2.svg}" alt=""></div>
+                        <div>
+                            <div class="stat-label">Nhân viên có lịch</div>
+                            <div class="stat-value" th:text="${summary.totalEmployees}">0</div>
+                        </div>
+                    </div>
+                    <div class="stat-meta">Số nhân viên xuất hiện trong khoảng lọc hiện tại.</div>
+                </article>
+                <article class="stat-card">
+                    <div class="stat-head">
+                        <div class="stat-icon icon-amber"><img th:src="@{/images/icons/icon3.svg}" alt=""></div>
+                        <div>
+                            <div class="stat-label">Tổng phân ca</div>
+                            <div class="stat-value" th:text="${summary.totalSchedules}">0</div>
+                        </div>
+                    </div>
+                    <div class="stat-meta">Tổng số bản ghi `WorkSchedules` đang hiển thị.</div>
+                </article>
+                <article class="stat-card">
+                    <div class="stat-head">
+                        <div class="stat-icon icon-green"><img th:src="@{/images/icons/icon4.svg}" alt=""></div>
+                        <div>
+                            <div class="stat-label">Số ngày có ca</div>
+                            <div class="stat-value" th:text="${summary.coverageDays}">0</div>
+                        </div>
+                    </div>
+                    <div class="stat-meta">Ngày có ít nhất một nhân viên được phân công.</div>
+                </article>
+                <article class="stat-card">
+                    <div class="stat-head">
+                        <div class="stat-icon icon-slate"><img th:src="@{/images/icons/icon5.svg}" alt=""></div>
+                        <div>
+                            <div class="stat-label">Trung bình mỗi ngày</div>
+                            <div class="stat-value" th:text="${summary.averagePerDay}">0.0</div>
+                        </div>
+                    </div>
+                    <div class="stat-meta">Dùng để theo dõi tải phân ca trong tuần.</div>
+                </article>
+            </div>
+        </section>
+
+        <section class="surface-card">
+            <div class="split-grid">
+                <article class="chart-card">
+                    <h2 class="chart-title"><img class="icon-inline" th:src="@{/images/icons/icon6.svg}" alt=""> Phân bố
+                        ca làm
+                    </h2>
+                    <div class="distribution-list">
+                        <div class="distribution-item" th:each="item : ${shiftTypeDistribution}">
+                            <div class="distribution-row">
+                                <span th:text="${item.label}"></span>
+                                <strong th:text="${item.percentage}">0</strong>%
+                            </div>
+                            <div class="progress"><span th:style="'width:' + ${item.percentage} + '%'" /></div>
+                        </div>
+                    </div>
+                </article>
+                <article class="chart-card">
+                    <h2 class="chart-title"><img class="icon-inline" th:src="@{/images/icons/icon7.svg}" alt=""> Tổng
+                        phân ca
+                        theo ngày</h2>
+                    <div class="daily-bars">
+                        <div class="daily-bar__row" th:each="item : ${dailyAssignmentStats}">
+                            <div class="daily-bar__label" th:text="${item.label}"></div>
+                            <div class="daily-bar__track"><span th:style="'width:' + ${item.percentOfPeak} + '%'" />
+                            </div>
+                            <div class="daily-bar__value" th:text="${item.count}">0</div>
+                        </div>
+                    </div>
+                </article>
+            </div>
+        </section>
+
+        <section class="surface-card">
+            <div class="section-heading">
+                <div>
+                    <div class="badge badge--soft">
+                        <img class="icon-inline" th:src="@{/images/icons/icon8.svg}" alt="">
+                        <span th:text="${viewModeLabel}">List / Grid View</span>
+                    </div>
+                    <h2 class="section-title">Lịch phân ca theo bộ lọc</h2>
+                    <p class="section-note" th:text="${rangeLabel}">Chưa chọn khoảng thời gian</p>
+                </div>
+                <a class="button-ghost" th:href="${exportUrl}">
+                    <img th:src="@{/images/icons/icon9.svg}" alt="">
+                    Xuất dữ liệu
+                </a>
+            </div>
+
+            <form th:action="${filterActionUrl}" method="get" class="toolbar">
+                <div class="toolbar-left">
+                    <label class="field"><input type="date" name="fromDate" th:value="${filter.fromDate}"></label>
+                    <label class="field"><input type="date" name="toDate" th:value="${filter.toDate}"></label>
+                    <label class="field">
+                        <select name="shiftId">
+                            <option value="">Tất cả ca</option>
+                            <option th:each="option : ${shiftOptions}" th:value="${option.value}"
+                                th:selected="${option.selected}" th:text="${option.label}"></option>
+                        </select>
+                    </label>
+                </div>
+                <div class="toolbar-right">
+                    <div class="search-field">
+                        <img class="icon-inline" th:src="@{/images/icons/icon12.svg}" alt="">
+                        <input type="search" name="keyword" th:value="${keyword}"
+                            placeholder="Tìm nhân viên theo tên hoặc email">
+                    </div>
+                    <div class="view-switch">
+                        <button th:classappend="${viewMode} != 'grid' ? 'is-active' : ''" class="button-ghost"
+                            type="submit" name="viewMode" value="list">List</button>
+                        <button th:classappend="${viewMode} == 'grid' ? 'is-active' : ''" class="button-ghost"
+                            type="submit" name="viewMode" value="grid">Grid</button>
+                    </div>
+                    <button class="button" type="submit">Áp dụng</button>
+                </div>
+            </form>
+
+            <div th:switch="${viewMode}">
+                <div th:case="'grid'">
+                    <div class="grid-board">
+                        <table class="grid-table">
+                            <thead>
+                                <tr>
+                                    <th>Nhân viên</th>
+                                    <th th:each="day : ${weekDays}">
+                                        <div class="grid-head__day" th:text="${day.dayLabel}"></div>
+                                        <div class="grid-head__date" th:text="${day.dateLabel}"></div>
+                                    </th>
+                                    <th>Thao tác</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:if="${#lists.isEmpty(gridRows)}">
+                                    <td colspan="9">
+                                        <div class="helper-text helper-text--center">Không có dữ liệu phân ca để hiển
+                                            thị.</div>
+                                    </td>
+                                </tr>
+                                <tr th:each="row : ${gridRows}">
+                                    <td>
+                                        <div class="grid-employee">
+                                            <div class="avatar" th:text="${row.initials}">NV</div>
+                                            <div>
+                                                <div class="employee-name" th:text="${row.employeeName}">Nhân viên</div>
+                                                <div class="employee-meta" th:text="${row.roleName}">User</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td th:each="cell : ${row.cells}">
+                                        <div th:if="${#lists.isEmpty(cell.items)}" class="cell-empty">-</div>
+                                        <div th:if="${!#lists.isEmpty(cell.items)}" class="cell-stack">
+                                            <div class="shift-pill" th:each="item : ${cell.items}"
+                                                th:classappend="' shift-' + ${item.shiftType}">
+                                                <div class="shift-pill__name" th:text="${item.name}">Ca làm</div>
+                                                <div class="shift-pill__time" th:text="${item.timeLabel}">Đang cập nhật
+                                                    giờ</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <a class="button-quiet" th:href="@{'/admin/schedule/edit/' + ${row.userId}}">
+                                            <img class="icon-inline" th:src="@{/images/icons/icon14.svg}" alt="">Sửa
+                                        </a>
+                                        <a class="button-quiet button-quiet--danger"
+                                            th:href="@{'/admin/schedule/delete/' + ${row.userId}}">
+                                            <img class="icon-inline" th:src="@{/images/icons/icon15.svg}" alt="">Xóa
+                                        </a>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div th:case="*">
+                    <div class="list-layout">
+                        <div th:if="${#lists.isEmpty(assignments)}" class="mini-card mini-card--padded">
+                            <div class="helper-text">Không tìm thấy bản ghi phân ca theo bộ lọc hiện tại.</div>
+                        </div>
+                        <div th:each="assignment : ${assignments}">
+                            <article class="assignment-item">
+                                <div class="assignment-main">
+                                    <div class="avatar" th:text="${assignment.initials}">NV</div>
+                                    <div class="assignment-copy">
+                                        <div class="assignment-name" th:text="${assignment.employeeName}">Nhân viên
+                                        </div>
+                                        <div class="meta-stack">
+                                            <span th:text="${assignment.email}">Email đang cập nhật</span>
+                                            <span>• <span th:text="${assignment.workDate}">Chưa có ngày
+                                                    làm</span></span>
+                                            <span>• <span th:text="${assignment.timeLabel}">Chưa có giờ ca</span></span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="assignment-side">
+                                    <span class="badge badge--success" th:text="${assignment.shiftName}">Ca làm</span>
+                                    <a class="button-quiet" th:href="${assignment.editUrl}"><img class="icon-inline"
+                                            th:src="@{/images/icons/icon14.svg}" alt="">Sửa</a>
+                                    <a class="button-quiet button-quiet--danger" th:href="${assignment.deleteUrl}"><img
+                                            class="icon-inline" th:src="@{/images/icons/icon15.svg}" alt="">Xóa</a>
+                                </div>
+                            </article>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+</body>
+
+</html>
