@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org"
-    th:replace="~{fragments/Admin/admin :: layout('Quản lý ca làm', ~{::content}, ${sessionUser}, null)}">
+    th:replace="~{fragments/Admin/admin :: layout('', ~{::content}, ${sessionUser}, null)}">
 
 <th:block th:fragment="content">
     <link rel="stylesheet" th:href="@{/css/style.css}">
@@ -17,6 +17,399 @@
             margin: 0;
             padding: 0;
         }
+
+        /* ── Nút "Tạo ca mới" nổi bật ── */
+        .btn-create {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 11px 20px;
+            border-radius: 50px;
+            font-size: 14px;
+            font-weight: 700;
+            color: #fff;
+            background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+            box-shadow: 0 4px 18px rgba(99, 102, 241, 0.35);
+            border: none;
+            cursor: pointer;
+            text-decoration: none;
+            transition: transform 0.18s ease, box-shadow 0.18s ease;
+        }
+        .btn-create:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(99, 102, 241, 0.45);
+        }
+
+        /* ── Nút hành động trong bảng ── */
+        .shifts-table .action-cell {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-edit,
+        .btn-delete {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 7px 14px;
+            border-radius: 50px;
+            font-size: 13px;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+            text-decoration: none;
+            transition: transform 0.16s ease, box-shadow 0.16s ease, background 0.16s ease;
+        }
+
+        .btn-edit {
+            background: #eff6ff;
+            color: #2563eb;
+            border: 1px solid #bfdbfe;
+        }
+        .btn-edit:hover {
+            background: #dbeafe;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.18);
+        }
+
+        .btn-delete {
+            background: #fff1f2;
+            color: #be123c;
+            border: 1px solid #fecdd3;
+        }
+        .btn-delete:hover {
+            background: #ffe4e6;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(190, 18, 60, 0.18);
+        }
+
+        /* ── Bảng ── */
+        .shifts-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .shifts-table thead tr {
+            background: linear-gradient(135deg, #f8faff 0%, #f1f5f9 100%);
+        }
+        .shifts-table th {
+            padding: 13px 16px;
+            text-align: left;
+            font-size: 12px;
+            font-weight: 700;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            border-bottom: 1px solid rgba(15, 23, 43, 0.08);
+        }
+        .shifts-table td {
+            padding: 14px 16px;
+            font-size: 14px;
+            color: #1e293b;
+            border-bottom: 1px solid rgba(15, 23, 43, 0.05);
+        }
+        .shifts-table tbody tr {
+            transition: background 0.14s;
+        }
+        .shifts-table tbody tr:hover {
+            background: #f8faff;
+        }
+        .shifts-table tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        /* Badge tên ca */
+        .shift-name-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-weight: 700;
+        }
+        .shift-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #6366f1;
+            flex-shrink: 0;
+        }
+
+        /* Time chip */
+        .time-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 4px 10px;
+            border-radius: 6px;
+            background: #f1f5f9;
+            color: #475569;
+            font-size: 13px;
+            font-weight: 600;
+        }
+        .time-chip i {
+            font-size: 11px;
+            color: #94a3b8;
+        }
+
+        /* ── Delete Confirm Modal ── */
+        .del-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            z-index: 9999;
+            background: rgba(15, 23, 43, 0.55);
+            backdrop-filter: blur(6px);
+            align-items: center;
+            justify-content: center;
+        }
+        .del-overlay.is-open {
+            display: flex;
+            animation: fadeInOverlay 0.2s ease;
+        }
+        @keyframes fadeInOverlay {
+            from { opacity: 0; }
+            to   { opacity: 1; }
+        }
+        .del-modal {
+            background: #fff;
+            border-radius: 24px;
+            padding: 36px 32px 28px;
+            max-width: 420px;
+            width: 90%;
+            text-align: center;
+            box-shadow: 0 32px 80px rgba(15, 23, 43, 0.2);
+            animation: slideUp 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(24px) scale(0.96); }
+            to   { opacity: 1; transform: translateY(0)   scale(1);    }
+        }
+        .del-modal__icon {
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            background: #fff1f2;
+            border: 4px solid #fecdd3;
+            display: grid;
+            place-items: center;
+            margin: 0 auto 20px;
+            font-size: 26px;
+            color: #be123c;
+        }
+        .del-modal__title {
+            margin: 0 0 8px;
+            font-size: 20px;
+            font-weight: 800;
+            color: #1e293b;
+        }
+        .del-modal__body {
+            margin: 0 0 24px;
+            color: #64748b;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+        .del-modal__body strong {
+            color: #1e293b;
+            font-weight: 700;
+        }
+        .del-modal__actions {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+        .del-modal__cancel {
+            flex: 1;
+            padding: 12px 0;
+            border-radius: 50px;
+            border: 1px solid #e2e8f0;
+            background: #f8fafc;
+            color: #475569;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background 0.15s, transform 0.15s;
+        }
+        .del-modal__cancel:hover {
+            background: #f1f5f9;
+            transform: translateY(-1px);
+        }
+        .del-modal__confirm {
+            flex: 1;
+            padding: 12px 0;
+            border-radius: 50px;
+            border: none;
+            background: linear-gradient(135deg, #ef4444 0%, #be123c 100%);
+            color: #fff;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 0 4px 14px rgba(190, 18, 60, 0.35);
+            transition: transform 0.15s, box-shadow 0.15s;
+        }
+        .del-modal__confirm:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 8px 20px rgba(190, 18, 60, 0.45);
+        }
+
+        /* ── Filter bar ── */
+        .filter-bar {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 10px;
+            padding: 16px 20px;
+            background: linear-gradient(135deg, #f8faff 0%, #f1f5f9 100%);
+            border-bottom: 1px solid rgba(15,23,43,0.07);
+            border-radius: 20px 20px 0 0;
+        }
+        .filter-bar-label {
+            font-size: 12px;
+            font-weight: 700;
+            color: #94a3b8;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            margin-right: 4px;
+            white-space: nowrap;
+        }
+        .filter-chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+        .fchip {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 6px 14px;
+            border-radius: 50px;
+            border: 1.5px solid #e2e8f0;
+            background: #fff;
+            color: #64748b;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            user-select: none;
+        }
+        .fchip:hover {
+            border-color: #818cf8;
+            color: #4f46e5;
+            background: #eef2ff;
+        }
+        .fchip.is-active {
+            background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+            border-color: transparent;
+            color: #fff;
+            box-shadow: 0 3px 10px rgba(99,102,241,0.35);
+        }
+        .fchip.is-active:hover {
+            background: linear-gradient(135deg, #818cf8 0%, #6366f1 100%);
+            color: #fff;
+        }
+
+        /* Divider between chips and custom range */
+        .filter-sep {
+            width: 1px;
+            height: 28px;
+            background: #e2e8f0;
+            margin: 0 4px;
+        }
+
+        /* Custom time range */
+        .filter-range {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        .filter-range-label {
+            font-size: 12px;
+            font-weight: 600;
+            color: #94a3b8;
+            white-space: nowrap;
+        }
+        .ftime-input {
+            padding: 6px 12px;
+            border-radius: 10px;
+            border: 1.5px solid #e2e8f0;
+            background: #fff;
+            font-size: 13px;
+            font-weight: 600;
+            color: #374151;
+            outline: none;
+            transition: border-color 0.15s, box-shadow 0.15s;
+            cursor: pointer;
+        }
+        .ftime-input:focus {
+            border-color: #818cf8;
+            box-shadow: 0 0 0 3px rgba(129,140,248,0.15);
+        }
+        .filter-range-arrow {
+            color: #94a3b8;
+            font-size: 12px;
+        }
+        .btn-apply-range {
+            padding: 7px 16px;
+            border-radius: 50px;
+            border: none;
+            background: #6366f1;
+            color: #fff;
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background 0.15s, transform 0.15s;
+        }
+        .btn-apply-range:hover {
+            background: #4f46e5;
+            transform: translateY(-1px);
+        }
+        .btn-reset-filter {
+            padding: 7px 14px;
+            border-radius: 50px;
+            border: 1px solid #e2e8f0;
+            background: transparent;
+            color: #94a3b8;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+        .btn-reset-filter:hover {
+            color: #ef4444;
+            border-color: #fca5a5;
+        }
+
+        /* Result counter */
+        .filter-result-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 20px;
+            border-bottom: 1px solid rgba(15,23,43,0.05);
+        }
+        .result-count {
+            font-size: 13px;
+            color: #64748b;
+            font-weight: 600;
+        }
+        .result-count strong {
+            color: #4f46e5;
+            font-weight: 800;
+        }
+
+        /* No-result row */
+        .no-filter-result {
+            display: none;
+            text-align: center;
+            padding: 40px;
+            color: #94a3b8;
+            font-size: 14px;
+        }
+        .no-filter-result i {
+            display: block;
+            font-size: 28px;
+            margin-bottom: 12px;
+            color: #c7d2fe;
+        }
     </style>
     <div class="schedule-shell">
         <header class="hero-panel">
@@ -26,15 +419,61 @@
                     Quản lý ca làm
                 </div>
                 <h1 class="page-title">Danh sách ca làm</h1>
-                <p class="page-subtitle">Tạo, sửa, xóa các ca làm việc (sáng, chiều, tối).</p>
             </div>
             <div class="hero-actions">
-                <a class="button" th:href="@{/admin/shifts/new}"><img class="icon-inline"
-                        th:src="@{/images/icons/icon10.svg}" alt="">Tạo ca mới</a>
+                <a class="btn-create" th:href="@{/admin/shifts/new}">
+                    <i class="fa-solid fa-plus"></i>
+                    Tạo ca mới
+                </a>
             </div>
         </header>
-        <section class="surface-card">
-            <table class="data-table">
+        <section class="surface-card" style="padding:0; overflow:hidden;">
+
+            <!-- Filter bar -->
+            <div class="filter-bar">
+                <span class="filter-bar-label"><i class="fa-solid fa-filter"></i> Lọc:</span>
+
+                <div class="filter-chips">
+                    <span class="fchip is-active" data-filter="all" onclick="applyChip(this,'all')">
+                        <i class="fa-solid fa-list"></i> Tất cả
+                    </span>
+                    <span class="fchip" data-filter="sang" onclick="applyChip(this,'sang')">
+                        <i class="fa-solid fa-sun"></i> Ca sáng <small style="opacity:.7">(05–12h)</small>
+                    </span>
+                    <span class="fchip" data-filter="chieu" onclick="applyChip(this,'chieu')">
+                        <i class="fa-solid fa-cloud-sun"></i> Ca chiều <small style="opacity:.7">(12–18h)</small>
+                    </span>
+                    <span class="fchip" data-filter="toi" onclick="applyChip(this,'toi')">
+                        <i class="fa-solid fa-moon"></i> Ca tối <small style="opacity:.7">(18–24h)</small>
+                    </span>
+                    <span class="fchip" data-filter="khuya" onclick="applyChip(this,'khuya')">
+                        <i class="fa-solid fa-star-and-crescent"></i> Ca khuya <small style="opacity:.7">(0–5h)</small>
+                    </span>
+                </div>
+
+                <div class="filter-sep"></div>
+
+                <div class="filter-range">
+                    <span class="filter-range-label">Từ</span>
+                    <input type="time" class="ftime-input" id="filterFrom" />
+                    <span class="filter-range-arrow"><i class="fa-solid fa-arrow-right"></i></span>
+                    <span class="filter-range-label">Đến</span>
+                    <input type="time" class="ftime-input" id="filterTo" />
+                    <button class="btn-apply-range" onclick="applyRange()">
+                        <i class="fa-solid fa-magnifying-glass"></i> Lọc
+                    </button>
+                    <button class="btn-reset-filter" onclick="resetFilter()">
+                        <i class="fa-solid fa-xmark"></i> Xóa lọc
+                    </button>
+                </div>
+            </div>
+
+            <!-- Result counter -->
+            <div class="filter-result-row">
+                <span class="result-count">Hiển thị <strong id="resultCount">0</strong> ca làm</span>
+            </div>
+
+            <table class="shifts-table">
                 <thead>
                     <tr>
                         <th>Tên ca</th>
@@ -43,32 +482,189 @@
                         <th>Thao tác</th>
                     </tr>
                 </thead>
-                <tbody>
-                    <tr th:each="shift : ${shifts}">
-                        <td th:text="${shift.shiftName}">Ca sáng</td>
-                        <td th:text="${shift.startTime}">06:00</td>
-                        <td th:text="${shift.endTime}">14:00</td>
+                <tbody id="shiftTableBody">
+                    <tr th:each="shift : ${shifts}"
+                        th:attr="data-start=${shift.startTime}, data-end=${shift.endTime}">
                         <td>
-                            <a class="button-quiet" th:href="@{/admin/shifts/{id}/edit(id=${shift.shiftId})}"><img
-                                    class="icon-inline" th:src="@{/images/icons/icon14.svg}" alt="">Sửa</a>
-                            <form th:action="@{/admin/shifts/{id}/delete(id=${shift.shiftId})}" method="post"
-                                style="display:inline;"
-                                onsubmit="return confirm('Bạn có chắc muốn xóa ca này không?');">
-
-                                <button type="submit" class="button-quiet button-quiet--danger">
-                                    <img class="icon-inline" th:src="@{/images/icons/icon15.svg}" alt="">
-                                    Xóa
-                                </button>
-                            </form>
+                            <span class="shift-name-badge">
+                                <span class="shift-dot"></span>
+                                <span th:text="${shift.shiftName}">Ca sáng</span>
+                            </span>
+                        </td>
+                        <td>
+                            <span class="time-chip">
+                                <i class="fa-regular fa-clock"></i>
+                                <span th:text="${shift.startTime}">06:00</span>
+                            </span>
+                        </td>
+                        <td>
+                            <span class="time-chip">
+                                <i class="fa-regular fa-clock"></i>
+                                <span th:text="${shift.endTime}">14:00</span>
+                            </span>
+                        </td>
+                        <td>
+                            <div class="action-cell">
+                                <a class="btn-edit" th:href="@{/admin/shifts/{id}/edit(id=${shift.shiftId})}">
+                                    <i class="fa-solid fa-pen-to-square"></i>
+                                    Sửa
+                                </a>
+                                <form th:action="@{/admin/shifts/{id}/delete(id=${shift.shiftId})}" method="post"
+                                    style="display:inline;">
+                                    <button type="button" class="btn-delete"
+                                        th:attr="onclick='openDelModal(this, \'' + ${shift.shiftName} + '\')'">
+                                        <i class="fa-solid fa-trash"></i>
+                                        Xóa
+                                    </button>
+                                </form>
+                            </div>
                         </td>
                     </tr>
                     <tr th:if="${#lists.isEmpty(shifts)}">
-                        <td colspan="4" class="helper-text helper-text--center">Chưa có ca làm nào.</td>
+                        <td colspan="4" style="text-align:center; padding: 40px; color: #94a3b8; font-size:14px;">
+                            <i class="fa-regular fa-calendar-xmark" style="font-size:24px; display:block; margin-bottom:10px;"></i>
+                            Chưa có ca làm nào.
+                        </td>
                     </tr>
                 </tbody>
             </table>
+
+            <!-- No filter result -->
+            <div class="no-filter-result" id="noFilterResult">
+                <i class="fa-solid fa-filter-circle-xmark"></i>
+                Không có ca làm nào khớp với điều kiện lọc.
+            </div>
+
         </section>
     </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div class="del-overlay" id="delOverlay">
+        <div class="del-modal">
+            <div class="del-modal__icon">
+                <i class="fa-solid fa-trash-can"></i>
+            </div>
+            <h2 class="del-modal__title">Xác nhận xóa ca làm</h2>
+            <p class="del-modal__body">
+                Bạn có chắc muốn xóa ca <strong id="delShiftName">này</strong> không?<br>
+                Hành động này <strong>không thể hoàn tác</strong>.
+            </p>
+            <div class="del-modal__actions">
+                <button class="del-modal__cancel" onclick="closeDelModal()">Hủy bỏ</button>
+                <button class="del-modal__confirm" id="delConfirmBtn">Xóa ngay</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        /* ========== Delete Modal ========== */
+        let _pendingForm = null;
+
+        function openDelModal(btn, shiftName) {
+            _pendingForm = btn.closest('form');
+            document.getElementById('delShiftName').textContent = shiftName;
+            document.getElementById('delOverlay').classList.add('is-open');
+        }
+        function closeDelModal() {
+            document.getElementById('delOverlay').classList.remove('is-open');
+            _pendingForm = null;
+        }
+        document.getElementById('delConfirmBtn').addEventListener('click', function () {
+            if (_pendingForm) _pendingForm.submit();
+        });
+        document.getElementById('delOverlay').addEventListener('click', function (e) {
+            if (e.target === this) closeDelModal();
+        });
+        document.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape') closeDelModal();
+        });
+
+        /* ========== Time Filter ========== */
+        function toMins(t) {
+            if (!t) return null;
+            const [h, m] = t.split(':').map(Number);
+            return h * 60 + m;
+        }
+
+        // Preset ranges (startTime of the shift)
+        const PRESETS = {
+            all:    [null, null],
+            sang:   [5*60,  12*60 - 1],
+            chieu:  [12*60, 18*60 - 1],
+            toi:    [18*60, 24*60 - 1],
+            khuya:  [0,      5*60 - 1]
+        };
+
+        let activePreset = 'all';
+        let customFrom = null, customTo = null;
+
+        function applyChip(el, preset) {
+            // Reset custom
+            document.getElementById('filterFrom').value = '';
+            document.getElementById('filterTo').value   = '';
+            customFrom = null;
+            customTo   = null;
+            activePreset = preset;
+
+            document.querySelectorAll('.fchip').forEach(c => c.classList.remove('is-active'));
+            el.classList.add('is-active');
+
+            runFilter();
+        }
+
+        function applyRange() {
+            const f = document.getElementById('filterFrom').value;
+            const t = document.getElementById('filterTo').value;
+            if (!f && !t) { resetFilter(); return; }
+
+            customFrom = f ? toMins(f) : 0;
+            customTo   = t ? toMins(t) : 23*60+59;
+            activePreset = null;
+
+            document.querySelectorAll('.fchip').forEach(c => c.classList.remove('is-active'));
+            runFilter();
+        }
+
+        function resetFilter() {
+            document.getElementById('filterFrom').value = '';
+            document.getElementById('filterTo').value   = '';
+            customFrom = null;
+            customTo   = null;
+            activePreset = 'all';
+            document.querySelectorAll('.fchip').forEach(c =>
+                c.classList.toggle('is-active', c.dataset.filter === 'all'));
+            runFilter();
+        }
+
+        function runFilter() {
+            const rows = document.querySelectorAll('#shiftTableBody tr[data-start]');
+            let visible = 0;
+
+            rows.forEach(row => {
+                const startMins = toMins(row.dataset.start);
+
+                let show = true;
+                if (activePreset && activePreset !== 'all') {
+                    const [lo, hi] = PRESETS[activePreset];
+                    show = startMins !== null && startMins >= lo && startMins <= hi;
+                } else if (customFrom !== null || customTo !== null) {
+                    const lo = customFrom !== null ? customFrom : 0;
+                    const hi = customTo   !== null ? customTo   : 23*60+59;
+                    show = startMins !== null && startMins >= lo && startMins <= hi;
+                }
+
+                row.style.display = show ? '' : 'none';
+                if (show) visible++;
+            });
+
+            document.getElementById('resultCount').textContent = visible;
+            document.getElementById('noFilterResult').style.display =
+                (visible === 0 && rows.length > 0) ? 'block' : 'none';
+        }
+
+        // Khởi tạo
+        document.addEventListener('DOMContentLoaded', runFilter);
+    </script>
 </th:block>
 
 </html>
