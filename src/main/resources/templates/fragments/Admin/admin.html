@@ -17,13 +17,13 @@
                 <p th:text="${sessionUser != null ? sessionUser.fullName : 'Quản trị viên'}">Quản trị viên</p>
             </div>
             <nav class="role-nav">
-                <a th:href="@{/admin/dashboard}" class="nav-item">Dashboard</a>
-                <a th:href="@{/admin/users}" class="nav-item">Users</a>
-                <a th:href="@{/admin/shifts}" class="nav-item">Ca làm việc</a>
-                <a th:href="@{/admin/schedule}" class="nav-item">Lịch phân ca</a>
-                <a href="#" class="nav-item">Điểm danh</a>
-                <a href="#" class="nav-item">Yêu cầu</a>
-                <a href="#" class="nav-item">Báo cáo</a>
+                <a th:href="@{/admin/dashboard}">Dashboard</a>
+                <a th:href="@{/admin/users}">User</a>
+                <a th:href="@{/admin/shifts}">Shifts</a>
+                <a href="#">Work schedules</a>
+                <a href="#">Attendance</a>
+                <a href="#">Request</a>
+                <a href="#">Report</a>
             </nav>
         </aside>
 

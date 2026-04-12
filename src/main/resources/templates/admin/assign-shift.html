@@ -1,17 +1,13 @@
 <!DOCTYPE html>
-<html lang="vi" xmlns:th="http://www.thymeleaf.org"
-    th:replace="~{fragments/Admin/admin :: layout('Phân ca cho nhân viên', ~{::content}, ${sessionUser}, null)}">
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
 
-<th:block th:fragment="content">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Phân ca cho nhân viên</title>
     <link rel="stylesheet" th:href="@{/css/style.css}">
 
     <style>
-        .role-content {
-            background: transparent !important;
-            border: none !important;
-            padding: 0 !important;
-            box-shadow: none !important;
-        }
         body.jsp-body {
             background: #f7f8fa;
             font-family: 'Segoe UI', Arial, sans-serif;
@@ -247,10 +243,10 @@
             }
         }
     </style>
-</th:block>
+</head>
 
-<th:block th:fragment="content">
-    <div class="schedule-shell" style="max-width: 800px; margin: 0 auto; width: 100%;">
+<body class="jsp-body">
+    <div class="schedule-shell">
         <header class="hero-panel">
             <div class="hero-copy">
                 <div class="eyebrow">
@@ -343,6 +339,7 @@
                 </a>
             </div>
         </section>
+    </div>
 
     <script>
         function toggleQuickCreate() {
@@ -382,5 +379,7 @@
             form.submit();
         }
     </script>
-    </div>
-</th:block>
+</body>
+
+</html>
+</html>

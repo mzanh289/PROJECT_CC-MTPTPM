@@ -12,7 +12,5 @@ public interface AttendanceRepository extends JpaRepository<Attendance, Integer>
 
     List<Attendance> findByUserUserId(Integer userId);
 
-    List<Attendance> findByUserUserIdOrderByWorkDateDesc(Integer userId);
-
     Optional<Attendance> findByUserUserIdAndWorkDate(Integer userId, LocalDate workDate);
 }
