@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+    th:replace="~{fragments/employee/employee :: layout(${pageTitle}, ~{::content}, ${sessionUser})}">
+
+<th:block th:fragment="content">
+    <h1>Chấm công</h1>
+
+    <p th:if="${!hasAssignedShift}">Hôm nay bạn chưa được phân ca. Không thể check-in/check-out.</p>
+    <p th:if="${hasAssignedShift and todayAttendance == null}">Bạn chưa check-in hôm nay.</p>
+    <p th:if="${hasAssignedShift and todayAttendance != null}">Ngày: <strong th:text="${#temporals.format(todayAttendance.workDate, 'EEEE, dd/MM/yyyy')}"></strong></p>
+    <p th:if="${hasAssignedShift and todayAttendance != null}">Trạng thái: <strong th:switch="${todayAttendance.status}">
+            <span th:case="'DI_LAM'">Đi làm</span>
+            <span th:case="'TRE'">Trễ</span>
+            <span th:case="'NGHI'">Nghỉ</span>
+            <span th:case="*">Không xác định</span>
+        </strong></p>
+    <p th:if="${todayAttendance != null and todayAttendance.checkIn != null}">Check-in: <strong th:text="${#temporals.format(todayAttendance.checkIn, 'HH:mm')}"></strong></p>
+    <p th:if="${todayAttendance != null and todayAttendance.checkOut != null}">Check-out: <strong th:text="${#temporals.format(todayAttendance.checkOut, 'HH:mm')}"></strong></p>
+
+    <form th:action="@{/employee/attendance/checkin}" method="post" style="display:inline-block; margin-right: 8px;">
+        <button type="submit" th:disabled="${!canCheckIn}">Check-in</button>
+    </form>
+    <form th:action="@{/employee/attendance/checkout}" method="post" style="display:inline-block;">
+        <button type="submit" th:disabled="${!canCheckOut}">Check-out</button>
+    </form>
+
+    <div th:if="${success != null}">
+        <p th:text="${success}"></p>
+    </div>
+    <div th:if="${error != null}">
+        <p th:text="${error}"></p>
+    </div>
+</th:block>
+
+</html>
