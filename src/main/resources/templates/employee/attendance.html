@@ -185,7 +185,7 @@
 
                 <div class="helper-text">
                     <p th:if="${!hasAssignedShift}">Hôm nay bạn chưa được phân ca, nên không thể chấm công.</p>
-                    <p th:if="${hasAssignedShift and todayAttendance == null}">Bạn có thể check-in khi ca bắt đầu.</p>
+                    <p th:if="${hasAssignedShift and todayAttendance == null}">Bạn có thể check-in trong khoảng 30 phút trước ca làm đến khi hết ca.</p>
                     <p th:if="${todayAttendance != null and todayAttendance.checkIn != null}">Check-in lúc <strong th:text="${#temporals.format(todayAttendance.checkIn, 'HH:mm')}"></strong>.</p>
                     <p th:if="${todayAttendance != null and todayAttendance.checkOut != null}">Check-out lúc <strong th:text="${#temporals.format(todayAttendance.checkOut, 'HH:mm')}"></strong>.</p>
                     <p th:if="${isEarlyCheckout}">Bạn đã out sớm so với giờ kết thúc ca.</p>

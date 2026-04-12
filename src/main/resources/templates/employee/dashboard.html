@@ -135,7 +135,7 @@
                 <h2>Ca làm hôm nay</h2>
                 <p><strong th:text="${todayShiftLabel}">Chưa có ca</strong></p>
                 <p th:text="${todayShiftTime}">-</p>
-                <p>
+                <p th:if="${hasTodayShift}">
                     Trạng thái: <span class="status-pill"
                         th:classappend="${todayAttendanceClass}"
                         th:text="${todayAttendanceStatus}">Chưa chấm công</span>

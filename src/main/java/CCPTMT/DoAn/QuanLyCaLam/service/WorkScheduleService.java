@@ -3,6 +3,7 @@ package CCPTMT.DoAn.QuanLyCaLam.service;
 import CCPTMT.DoAn.QuanLyCaLam.entity.Shift;
 import CCPTMT.DoAn.QuanLyCaLam.entity.User;
 import CCPTMT.DoAn.QuanLyCaLam.entity.WorkSchedule;
+import CCPTMT.DoAn.QuanLyCaLam.entity.enums.Role;
 import CCPTMT.DoAn.QuanLyCaLam.repository.ShiftRepository;
 import CCPTMT.DoAn.QuanLyCaLam.repository.UserRepository;
 import CCPTMT.DoAn.QuanLyCaLam.repository.WorkScheduleRepository;
@@ -60,6 +61,9 @@ public class WorkScheduleService {
     public WorkSchedule assignShift(Integer userId, Integer shiftId, LocalDate workDate) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy nhân viên"));
+        if (user.getRole() != Role.USER) {
+            throw new IllegalArgumentException("Chỉ được phân ca cho nhân viên (USER)");
+        }
         Shift shift = shiftRepository.findById(shiftId)
                 .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy ca làm"));
 
@@ -111,13 +115,58 @@ public class WorkScheduleService {
     }
 
     @Transactional
+    public WorkSchedule updateSchedule(Integer scheduleId, Integer userId, Integer shiftId, LocalDate workDate) {
+        WorkSchedule schedule = workScheduleRepository.findById(scheduleId)
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy phân ca"));
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy nhân viên"));
+        if (user.getRole() != Role.USER) {
+            throw new IllegalArgumentException("Chỉ được phân ca cho nhân viên (USER)");
+        }
+        Shift shift = shiftRepository.findById(shiftId)
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy ca làm"));
+
+        Optional<WorkSchedule> duplicateSchedule = workScheduleRepository
+                .findByUserUserIdAndWorkDateAndShiftShiftId(userId, workDate, shiftId);
+        if (duplicateSchedule.isPresent() && !duplicateSchedule.get().getScheduleId().equals(scheduleId)) {
+            throw new IllegalArgumentException(
+                    "Nhân viên đã được phân ca '" + shift.getShiftName() + "' vào ngày này rồi.");
+        }
+
+        List<WorkSchedule> existingOnDay = workScheduleRepository.findByUserUserIdAndWorkDate(userId, workDate);
+        LocalTime newStart = shift.getStartTime();
+        LocalTime newEnd = shift.getEndTime();
+
+        for (WorkSchedule existing : existingOnDay) {
+            if (existing.getScheduleId().equals(scheduleId)) {
+                continue;
+            }
+            LocalTime exStart = existing.getShift().getStartTime();
+            LocalTime exEnd = existing.getShift().getEndTime();
+            boolean overlaps = newStart.isBefore(exEnd) && newEnd.isAfter(exStart);
+            if (overlaps) {
+                throw new IllegalArgumentException(
+                        "Ca '" + shift.getShiftName() + "' (" + newStart + "-" + newEnd + ")"
+                                + " bị trùng giờ với ca '" + existing.getShift().getShiftName()
+                                + "' (" + exStart + "-" + exEnd + ").");
+            }
+        }
+
+        schedule.setUser(user);
+        schedule.setShift(shift);
+        schedule.setWorkDate(workDate);
+        return workScheduleRepository.save(schedule);
+    }
+
+    @Transactional
     public void deleteScheduleByUserAndDate(Integer userId, LocalDate workDate) {
         List<WorkSchedule> schedules = workScheduleRepository.findByUserUserIdAndWorkDate(userId, workDate);
         workScheduleRepository.deleteAll(schedules);
     }
 
     public List<User> getAllEmployees() {
-        return userRepository.findAll();
+        return userRepository.findAllByRoleOrderByUserIdDesc(Role.USER);
     }
 
     public List<Shift> getAllShifts() {

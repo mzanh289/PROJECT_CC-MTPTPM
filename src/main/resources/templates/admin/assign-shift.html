@@ -32,7 +32,8 @@
                     <label class="field-label" for="userId">Nhân viên</label>
                     <select id="userId" name="userId" required>
                         <option value="">-- Chọn nhân viên --</option>
-                        <option th:each="user : ${users}" th:value="${user.userId}" th:text="${user.fullName}"></option>
+                        <option th:each="user : ${users}" th:value="${user.userId}" th:text="${user.fullName}"
+                            th:selected="${selectedUserId != null and selectedUserId == user.userId}"></option>
                     </select>
                 </div>
                 <div class="field-block">
@@ -43,6 +44,7 @@
                     <select id="shiftId" name="shiftId" required>
                         <option value="">-- Chọn ca --</option>
                         <option th:each="shift : ${shifts}" th:value="${shift.shiftId}"
+                            th:selected="${selectedShiftId != null and selectedShiftId == shift.shiftId}"
                             th:text="${shift.shiftName} + ' (' + ${shift.startTime} + ' - ' + ${shift.endTime} + ')'">
                         </option>
                     </select>

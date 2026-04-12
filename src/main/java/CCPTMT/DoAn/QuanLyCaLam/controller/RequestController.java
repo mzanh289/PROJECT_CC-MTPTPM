@@ -13,6 +13,7 @@ import CCPTMT.DoAn.QuanLyCaLam.dto.SessionUserDto;
 import CCPTMT.DoAn.QuanLyCaLam.dto.ShiftChangeRequestDto;
 import CCPTMT.DoAn.QuanLyCaLam.entity.enums.Role;
 import CCPTMT.DoAn.QuanLyCaLam.service.RequestService;
+import CCPTMT.DoAn.QuanLyCaLam.service.ShiftService;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -27,6 +28,7 @@ import lombok.RequiredArgsConstructor;
 public class RequestController {
 
     private final RequestService requestService;
+    private final ShiftService shiftService;
 
     /**
      * Hiển thị form tạo yêu cầu mới
@@ -141,7 +143,7 @@ public class RequestController {
         model.addAttribute("sessionUser", sessionUser);
         model.addAttribute("pageTitle", "Yêu cầu đổi ca");
         model.addAttribute("workSchedules", workSchedules);
-        model.addAttribute("shifts", new java.util.ArrayList<>()); // Sẽ được fill bằng JavaScript từ shifts list
+        model.addAttribute("shifts", shiftService.getAllShifts());
         return "employee/shift-change-request";
     }
 
@@ -171,6 +173,7 @@ public class RequestController {
             model.addAttribute("sessionUser", sessionUser);
             model.addAttribute("pageTitle", "Yêu cầu đổi ca");
             model.addAttribute("workSchedules", workSchedules);
+            model.addAttribute("shifts", shiftService.getAllShifts());
             return "employee/shift-change-request";
         }
 
@@ -184,6 +187,7 @@ public class RequestController {
             model.addAttribute("sessionUser", sessionUser);
             model.addAttribute("pageTitle", "Yêu cầu đổi ca");
             model.addAttribute("workSchedules", workSchedules);
+            model.addAttribute("shifts", shiftService.getAllShifts());
             return "employee/shift-change-request";
         }
     }

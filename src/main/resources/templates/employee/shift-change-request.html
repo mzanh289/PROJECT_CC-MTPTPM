@@ -449,7 +449,7 @@
                     <select id="workScheduleSelect" class="input-control" required>
                         <option value="">-- Chọn một ca làm trong lịch của bạn --</option>
                         <option th:each="ws : ${workSchedules}"
-                                th:value="${ws.workScheduleId}"
+                            th:value="${ws.scheduleId}"
                                 th:data-date="${ws.workDate}"
                                 th:data-shift-id="${ws.shift.shiftId}"
                                 th:data-shift-name="${ws.shift.shiftName}"
@@ -458,6 +458,14 @@
                         </option>
                     </select>
                 </div>
+
+                <select id="allShiftsData" style="display:none;" aria-hidden="true" tabindex="-1">
+                    <option th:each="s : ${shifts}"
+                            th:value="${s.shiftId}"
+                            th:data-name="${s.shiftName}"
+                            th:data-start="${s.startTime}"
+                            th:data-end="${s.endTime}">shift</option>
+                </select>
 
                 <!-- Hidden inputs for form submission -->
                 <input type="hidden" th:field="*{workDate}" id="workDateInput">
@@ -506,19 +514,12 @@
         const shiftIdInput = document.getElementById('shiftIdInput');
         const submitBtn = document.getElementById('submitBtn');
 
-        // Fetch shifts from backend to fill targetShiftSelect
-        let allShifts = [];
-        fetch('/api/shifts') // You might need to ensure this endpoint exists or pass data via model
-            .then(res => res.json())
-            .then(data => { allShifts = data; })
-            .catch(() => {
-                // Fallback: Use some basic shifts if API fails
-                allShifts = [
-                    { shiftId: 1, shiftName: 'Ca sáng', startTime: '08:00', endTime: '12:00' },
-                    { shiftId: 2, shiftName: 'Ca chiều', startTime: '13:00', endTime: '17:00' },
-                    { shiftId: 3, shiftName: 'Ca tối', startTime: '18:00', endTime: '22:00' }
-                ];
-            });
+        const allShiftOptions = Array.from(document.querySelectorAll('#allShiftsData option')).map(opt => ({
+            shiftId: Number(opt.value),
+            shiftName: opt.getAttribute('data-name') || '',
+            startTime: opt.getAttribute('data-start') || '',
+            endTime: opt.getAttribute('data-end') || ''
+        }));
 
         workScheduleSelect.addEventListener('change', function() {
             const selectedOption = this.options[this.selectedIndex];
@@ -539,17 +540,18 @@
 
                 // Enable target shift selection and filter out current shift
                 targetShiftSelect.disabled = false;
-                submitBtn.disabled = false;
                 
                 targetShiftSelect.innerHTML = '<option value="">-- Chọn ca mới --</option>';
-                allShifts.forEach(s => {
-                    if (s.shiftId != shiftId) {
+                allShiftOptions.forEach(s => {
+                    if (String(s.shiftId) !== String(shiftId)) {
                         const opt = document.createElement('option');
                         opt.value = s.shiftId;
                         opt.textContent = `${s.shiftName} (${s.startTime} - ${s.endTime})`;
                         targetShiftSelect.appendChild(opt);
                     }
                 });
+
+                submitBtn.disabled = targetShiftSelect.options.length <= 1;
             } else {
                 currentShiftDisplay.innerHTML = '<span style="color: #94a3b8; font-style: italic;">Chưa chọn ca làm...</span>';
                 targetShiftSelect.disabled = true;
@@ -557,6 +559,10 @@
                 workDateInput.value = '';
                 shiftIdInput.value = '';
             }
+        });
+
+        targetShiftSelect.addEventListener('change', function() {
+            submitBtn.disabled = !this.value || !workDateInput.value || !shiftIdInput.value;
         });
     </script>
 </th:block>

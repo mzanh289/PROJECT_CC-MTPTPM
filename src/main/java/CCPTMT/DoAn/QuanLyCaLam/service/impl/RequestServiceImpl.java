@@ -70,22 +70,44 @@ public class RequestServiceImpl implements RequestService {
     public Request approveRequest(Integer requestId) {
         Request request = requestRepository.findById(requestId)
                 .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy yêu cầu"));
-        
+
         // Nếu là yêu cầu đổi ca, thực hiện update WorkSchedule
         if (request.getType().name().equals("SHIFT_CHANGE")) {
+                        if (request.getWorkDate() == null || request.getTargetShift() == null) {
+                                throw new IllegalArgumentException("Yêu cầu đổi ca không hợp lệ (thiếu dữ liệu ca/ngày làm)");
+                        }
+
+                        Shift sourceShift = request.getShift();
+                        if (sourceShift == null) {
+                                throw new IllegalArgumentException("Yêu cầu đổi ca thiếu ca hiện tại");
+                        }
+
+                        if (sourceShift.getShiftId().equals(request.getTargetShift().getShiftId())) {
+                                throw new IllegalArgumentException("Ca muốn đổi phải khác ca hiện tại");
+                        }
+
             // Tìm WorkSchedule cần update (theo userId, workDate, và shiftId cũ)
             WorkSchedule workSchedule = workScheduleRepository
                     .findByUserUserIdAndWorkDateAndShiftShiftId(
                             request.getUser().getUserId(),
                             request.getWorkDate(),
-                            request.getShift().getShiftId())
+                                                        sourceShift.getShiftId())
                     .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy lịch làm việc để cập nhật"));
+
+                        boolean alreadyHasTargetShift = workScheduleRepository
+                                        .existsByUserUserIdAndWorkDateAndShiftShiftId(
+                                                        request.getUser().getUserId(),
+                                                        request.getWorkDate(),
+                                                        request.getTargetShift().getShiftId());
+                        if (alreadyHasTargetShift) {
+                                throw new IllegalArgumentException("Nhân viên đã có ca muốn đổi trong ngày này");
+                        }
             
             // Update ca làm từ ca cũ (shiftId) sang ca mới (targetShiftId)
             workSchedule.setShift(request.getTargetShift());
             workScheduleRepository.save(workSchedule);
         }
-        
+
         request.setStatus(RequestStatus.APPROVED);
         return requestRepository.save(request);
     }
@@ -128,6 +150,14 @@ public class RequestServiceImpl implements RequestService {
 
         Shift targetShift = shiftRepository.findById(dto.getTargetShiftId())
                 .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy ca muốn đổi"));
+
+                if (currentShift.getShiftId().equals(targetShift.getShiftId())) {
+                        throw new IllegalArgumentException("Ca muốn đổi phải khác ca hiện tại");
+                }
+
+                if (workScheduleRepository.existsByUserUserIdAndWorkDateAndShiftShiftId(userId, dto.getWorkDate(), dto.getTargetShiftId())) {
+                        throw new IllegalArgumentException("Bạn đã có ca muốn đổi trong ngày này");
+                }
 
         // Create shift change request
         // Note: For SHIFT_CHANGE requests, fromDate and toDate are set to workDate

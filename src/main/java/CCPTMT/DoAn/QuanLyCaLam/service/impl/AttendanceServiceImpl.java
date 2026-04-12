@@ -65,11 +65,37 @@ public class AttendanceServiceImpl implements AttendanceService {
 
         WorkSchedule schedule = requireAssignedShift(userId, today);
 
-        Attendance attendance = attendanceRepository.findByUserUserIdAndWorkDate(userId, today)
-                .orElseGet(() -> createAttendanceForToday(userId, today));
+        Attendance attendance = attendanceRepository.findByUserUserIdAndWorkDate(userId, today).orElse(null);
 
-        if (attendance.getCheckIn() != null) {
+        if (attendance != null && attendance.getCheckIn() != null) {
             throw new IllegalStateException("Bạn đã check-in hôm nay.");
+        }
+
+        if (attendance != null && attendance.getStatus() == AttendanceStatus.NGHI) {
+            throw new IllegalStateException("Bạn đã bị ghi nhận nghỉ cho ca hôm nay, không thể check-in.");
+        }
+
+        LocalDateTime shiftStartAt = LocalDateTime.of(today, schedule.getShift().getStartTime());
+        LocalDateTime shiftEndAt = LocalDateTime.of(today, schedule.getShift().getEndTime());
+        if (!shiftEndAt.isAfter(shiftStartAt)) {
+            shiftEndAt = shiftEndAt.plusDays(1);
+        }
+
+        LocalDateTime checkInOpenAt = shiftStartAt.minusMinutes(30);
+
+        if (now.isBefore(checkInOpenAt)) {
+            throw new IllegalStateException("Bạn chỉ có thể check-in trong vòng 30 phút trước ca làm.");
+        }
+
+        if (now.isAfter(shiftEndAt)) {
+            Attendance absentAttendance = attendance != null ? attendance : createAttendanceForToday(userId, today);
+            absentAttendance.setStatus(AttendanceStatus.NGHI);
+            attendanceRepository.save(absentAttendance);
+            throw new IllegalStateException("Đã quá thời gian check-in, ca làm được ghi nhận là nghỉ.");
+        }
+
+        if (attendance == null) {
+            attendance = createAttendanceForToday(userId, today);
         }
 
         attendance.setCheckIn(now);
@@ -148,11 +174,10 @@ public class AttendanceServiceImpl implements AttendanceService {
     private Attendance createAttendanceForToday(Integer userId, LocalDate today) {
         User user = userRepository.findByUserId(userId)
                 .orElseThrow(() -> new IllegalArgumentException("User không tồn tại."));
-        Attendance attendance = Attendance.builder()
+        return Attendance.builder()
                 .user(user)
                 .workDate(today)
                 .status(AttendanceStatus.DI_LAM)
                 .build();
-        return attendanceRepository.save(attendance);
     }
 }

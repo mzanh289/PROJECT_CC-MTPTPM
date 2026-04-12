@@ -1,5 +1,8 @@
 package CCPTMT.DoAn.QuanLyCaLam.controller;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -44,7 +47,12 @@ public class EmployeeAttendanceController {
         boolean isEarlyCheckout = todayAttendance != null && todaySchedule != null && todayAttendance.getCheckOut() != null
                 && todayAttendance.getCheckOut().toLocalTime().isBefore(todaySchedule.getShift().getEndTime());
 
-        boolean canCheckIn = hasAssignedShift && (todayAttendance == null || todayAttendance.getCheckIn() == null);
+        boolean isMarkedAbsent = todayAttendance != null && todayAttendance.getStatus() == AttendanceStatus.NGHI;
+        boolean isWithinCheckInWindow = hasAssignedShift && isWithinCheckInWindow(todaySchedule);
+        boolean canCheckIn = hasAssignedShift
+            && (todayAttendance == null || todayAttendance.getCheckIn() == null)
+            && !isMarkedAbsent
+            && isWithinCheckInWindow;
         boolean canCheckOut = hasAssignedShift && todayAttendance != null && todayAttendance.getCheckIn() != null
                 && todayAttendance.getCheckOut() == null;
 
@@ -82,6 +90,24 @@ public class EmployeeAttendanceController {
             return AttendanceStatus.TRE;
         }
         return AttendanceStatus.DI_LAM;
+    }
+
+    private boolean isWithinCheckInWindow(WorkSchedule schedule) {
+        if (schedule == null) {
+            return false;
+        }
+
+        LocalDate today = LocalDate.now();
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime shiftStartAt = LocalDateTime.of(today, schedule.getShift().getStartTime());
+        LocalDateTime shiftEndAt = LocalDateTime.of(today, schedule.getShift().getEndTime());
+
+        if (!shiftEndAt.isAfter(shiftStartAt)) {
+            shiftEndAt = shiftEndAt.plusDays(1);
+        }
+
+        LocalDateTime checkInOpenAt = shiftStartAt.minusMinutes(30);
+        return !now.isBefore(checkInOpenAt) && !now.isAfter(shiftEndAt);
     }
 
     @PostMapping("/checkin")

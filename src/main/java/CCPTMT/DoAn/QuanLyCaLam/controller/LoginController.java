@@ -136,6 +136,7 @@ public class LoginController {
         model.addAttribute("sessionUser", sessionUser);
         model.addAttribute("pageTitle", "Employee Dashboard");
         model.addAttribute("pageDescription", "Theo dõi ca làm, lịch phân ca trong tháng và trạng thái chấm công.");
+        model.addAttribute("hasTodayShift", todaySchedule != null);
         model.addAttribute("todayShiftLabel", todayShiftLabel);
         model.addAttribute("todayShiftTime", todayShiftTime);
         model.addAttribute("todayAttendanceStatus", todayAttendanceStatus);

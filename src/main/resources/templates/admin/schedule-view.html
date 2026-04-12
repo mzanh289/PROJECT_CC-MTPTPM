@@ -87,8 +87,7 @@
                             <td th:text="${schedule.shift.startTime + ' - ' + schedule.shift.endTime}">06:00 - 14:00
                             </td>
                             <td>
-                                <a class="action-btn action-btn--danger"
-                                    th:href="@{/admin/schedule/delete/{id}(id=${schedule.scheduleId})}">Xóa</a>
+                                <a class="action-btn" th:href="@{/admin/schedule/{id}/edit(id=${schedule.scheduleId})}">Sửa</a>
                             </td>
                         </tr>
                     </tbody>
@@ -170,9 +169,7 @@
                         <td th:text="${schedule.shift.startTime}">06:00</td>
                         <td th:text="${schedule.shift.endTime}">14:00</td>
                         <td>
-                            <form th:action="@{/admin/schedule/{id}/delete(id=${schedule.scheduleId})}" method="post">
-                                <button type="submit" class="action-btn action-btn--danger">Xóa</button>
-                            </form>
+                            <a class="action-btn" th:href="@{/admin/schedule/{id}/edit(id=${schedule.scheduleId})}">Sửa</a>
                         </td>
                     </tr>
                 </tbody>

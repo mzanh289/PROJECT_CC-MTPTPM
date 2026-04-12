@@ -9,6 +9,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import CCPTMT.DoAn.QuanLyCaLam.entity.WorkSchedule;
+import CCPTMT.DoAn.QuanLyCaLam.entity.enums.Role;
 
 public interface WorkScheduleRepository extends JpaRepository<WorkSchedule, Integer> {
 
@@ -27,6 +28,16 @@ public interface WorkScheduleRepository extends JpaRepository<WorkSchedule, Inte
     @Query("SELECT ws FROM WorkSchedule ws JOIN FETCH ws.shift WHERE ws.user.userId = :userId AND ws.workDate = :workDate")
     List<WorkSchedule> findByUserUserIdAndWorkDate(@Param("userId") Integer userId,
             @Param("workDate") LocalDate workDate);
+
+    @Query("SELECT ws FROM WorkSchedule ws "
+            + "JOIN FETCH ws.user u "
+            + "JOIN FETCH ws.shift s "
+            + "WHERE ws.workDate BETWEEN :fromDate AND :toDate "
+            + "AND u.role = :role "
+            + "ORDER BY ws.workDate ASC, u.fullName ASC")
+    List<WorkSchedule> findSchedulesWithUserAndShiftBetween(@Param("fromDate") LocalDate fromDate,
+            @Param("toDate") LocalDate toDate,
+            @Param("role") Role role);
 
     // Kiểm tra nhân viên đã có đúng ca này trong ngày này chưa
     boolean existsByUserUserIdAndWorkDateAndShiftShiftId(Integer userId, LocalDate workDate, Integer shiftId);

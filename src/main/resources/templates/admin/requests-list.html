@@ -376,6 +376,7 @@
 
         .table tr:last-child td { border-bottom: none; }
         .table tr:hover { background-color: #f8fafc; }
+        .request-row { cursor: pointer; }
 
         /* Badges & Tags */
         .user-cell {
@@ -444,6 +445,114 @@
 
         .btn-approve:hover { background: #f0fdf4; border-color: #10b981; color: #10b981; }
         .btn-reject:hover { background: #fef2f2; border-color: #ef4444; color: #ef4444; }
+
+        .request-modal {
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.45);
+            z-index: 1100;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+        }
+
+        .request-modal.active { display: flex; }
+
+        .request-modal-card {
+            width: min(760px, 100%);
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 40px rgba(15, 23, 42, 0.25);
+            border: 1px solid var(--border-color);
+            overflow: hidden;
+        }
+
+        .modal-header {
+            padding: 18px 22px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .modal-header h3 {
+            margin: 0;
+            font-size: 1.1rem;
+            color: #1e293b;
+        }
+
+        .modal-close {
+            border: none;
+            background: transparent;
+            font-size: 20px;
+            cursor: pointer;
+            color: #64748b;
+        }
+
+        .modal-body {
+            padding: 20px 22px;
+            display: grid;
+            gap: 14px;
+        }
+
+        .modal-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .modal-item {
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 10px 12px;
+            background: #f8fafc;
+        }
+
+        .modal-label {
+            font-size: 12px;
+            color: #64748b;
+            margin-bottom: 4px;
+            display: block;
+        }
+
+        .modal-value {
+            font-size: 14px;
+            color: #1e293b;
+            font-weight: 600;
+            white-space: pre-wrap;
+        }
+
+        .modal-actions {
+            padding: 16px 22px;
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+
+        .btn-modal {
+            border: none;
+            border-radius: 10px;
+            padding: 10px 14px;
+            cursor: pointer;
+            font-weight: 700;
+        }
+
+        .btn-modal-approve {
+            background: #10b981;
+            color: white;
+        }
+
+        .btn-modal-reject {
+            background: #ef4444;
+            color: white;
+        }
+
+        .btn-modal-close {
+            background: #e2e8f0;
+            color: #334155;
+        }
 
         .alert-toast {
             position: fixed;
@@ -528,7 +637,16 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <tr th:each="request : ${requests}">
+                    <tr th:each="request : ${requests}" class="request-row"
+                        th:attr="data-id=${request.requestId},
+                                 data-user=${request.user.fullName},
+                                 data-email=${request.user.email},
+                                 data-type=${request.type.name() == 'LEAVE' ? 'Xin nghỉ' : 'Đổi ca'},
+                                 data-detail=${request.type.name() == 'LEAVE' ? (#temporals.format(request.fromDate, 'dd/MM/yyyy') + ' -> ' + #temporals.format(request.toDate, 'dd/MM/yyyy')) : (#temporals.format(request.workDate, 'dd/MM/yyyy') + ': ' + (request.shift != null ? request.shift.shiftName : '-') + ' -> ' + (request.targetShift != null ? request.targetShift.shiftName : '-'))},
+                                 data-reason=${request.reason},
+                                 data-created=${#temporals.format(request.createdAt, 'dd/MM/yyyy HH:mm')},
+                                 data-status=${request.status.name() == 'PENDING' ? 'Chờ duyệt' : (request.status.name() == 'APPROVED' ? 'Đã duyệt' : 'Từ chối')},
+                                 data-pending=${request.status.name() == 'PENDING' ? 'true' : 'false'}">
                         <td>
                             <div class="user-cell">
                                 <div class="user-avatar" th:text="${#strings.substring(request.user.fullName,0,1)}">N</div>
@@ -577,12 +695,12 @@
                         </td>
                         <td>
                             <div class="actions" th:if="${request.status.name() == 'PENDING'}">
-                                <form th:action="@{/admin/requests/{id}/approve(id=${request.requestId})}" method="post">
+                                <form th:action="@{/admin/requests/{id}/approve(id=${request.requestId})}" method="post" class="request-action-form">
                                     <button type="submit" class="btn-icon btn-approve" title="Duyệt yêu cầu">
                                         <i class="fas fa-check"></i>
                                     </button>
                                 </form>
-                                <form th:action="@{/admin/requests/{id}/reject(id=${request.requestId})}" method="post">
+                                <form th:action="@{/admin/requests/{id}/reject(id=${request.requestId})}" method="post" class="request-action-form">
                                     <button type="submit" class="btn-icon btn-reject" title="Từ chối">
                                         <i class="fas fa-times"></i>
                                     </button>
@@ -598,6 +716,60 @@
                     </tr>
                 </tbody>
             </table>
+        </div>
+    </div>
+
+    <div id="requestDetailModal" class="request-modal" aria-hidden="true">
+        <div class="request-modal-card">
+            <div class="modal-header">
+                <h3>Chi tiết yêu cầu</h3>
+                <button type="button" class="modal-close" id="modalCloseBtn">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="modal-grid">
+                    <div class="modal-item">
+                        <span class="modal-label">Mã yêu cầu</span>
+                        <span id="modalRequestId" class="modal-value">-</span>
+                    </div>
+                    <div class="modal-item">
+                        <span class="modal-label">Trạng thái</span>
+                        <span id="modalStatus" class="modal-value">-</span>
+                    </div>
+                    <div class="modal-item">
+                        <span class="modal-label">Nhân viên</span>
+                        <span id="modalUser" class="modal-value">-</span>
+                    </div>
+                    <div class="modal-item">
+                        <span class="modal-label">Email</span>
+                        <span id="modalEmail" class="modal-value">-</span>
+                    </div>
+                    <div class="modal-item">
+                        <span class="modal-label">Loại yêu cầu</span>
+                        <span id="modalType" class="modal-value">-</span>
+                    </div>
+                    <div class="modal-item">
+                        <span class="modal-label">Ngày gửi</span>
+                        <span id="modalCreated" class="modal-value">-</span>
+                    </div>
+                </div>
+                <div class="modal-item">
+                    <span class="modal-label">Thời gian / Nội dung</span>
+                    <span id="modalDetail" class="modal-value">-</span>
+                </div>
+                <div class="modal-item">
+                    <span class="modal-label">Lý do</span>
+                    <span id="modalReason" class="modal-value">-</span>
+                </div>
+            </div>
+            <div class="modal-actions" id="modalActions">
+                <form id="modalApproveForm" method="post">
+                    <button type="submit" class="btn-modal btn-modal-approve">Duyệt</button>
+                </form>
+                <form id="modalRejectForm" method="post">
+                    <button type="submit" class="btn-modal btn-modal-reject">Từ chối</button>
+                </form>
+                <button type="button" class="btn-modal btn-modal-close" id="modalCloseFooterBtn">Đóng</button>
+            </div>
         </div>
     </div>
 
@@ -620,6 +792,66 @@
                 toast.style.display = 'none';
             }, 3000);
         }
+
+        const modal = document.getElementById('requestDetailModal');
+        const modalCloseBtn = document.getElementById('modalCloseBtn');
+        const modalCloseFooterBtn = document.getElementById('modalCloseFooterBtn');
+        const modalRequestId = document.getElementById('modalRequestId');
+        const modalStatus = document.getElementById('modalStatus');
+        const modalUser = document.getElementById('modalUser');
+        const modalEmail = document.getElementById('modalEmail');
+        const modalType = document.getElementById('modalType');
+        const modalCreated = document.getElementById('modalCreated');
+        const modalDetail = document.getElementById('modalDetail');
+        const modalReason = document.getElementById('modalReason');
+        const modalActions = document.getElementById('modalActions');
+        const modalApproveForm = document.getElementById('modalApproveForm');
+        const modalRejectForm = document.getElementById('modalRejectForm');
+
+        function closeRequestModal() {
+            modal.classList.remove('active');
+            modal.setAttribute('aria-hidden', 'true');
+        }
+
+        function openRequestModal(row) {
+            const id = row.dataset.id;
+            modalRequestId.textContent = '#' + id;
+            modalStatus.textContent = row.dataset.status || '-';
+            modalUser.textContent = row.dataset.user || '-';
+            modalEmail.textContent = row.dataset.email || '-';
+            modalType.textContent = row.dataset.type || '-';
+            modalCreated.textContent = row.dataset.created || '-';
+            modalDetail.textContent = row.dataset.detail || '-';
+            modalReason.textContent = row.dataset.reason || '-';
+
+            const isPending = row.dataset.pending === 'true';
+            modalActions.style.display = 'flex';
+            modalApproveForm.style.display = isPending ? 'inline-block' : 'none';
+            modalRejectForm.style.display = isPending ? 'inline-block' : 'none';
+            modalApproveForm.action = '/admin/requests/' + id + '/approve';
+            modalRejectForm.action = '/admin/requests/' + id + '/reject';
+
+            modal.classList.add('active');
+            modal.setAttribute('aria-hidden', 'false');
+        }
+
+        document.querySelectorAll('.request-row').forEach(row => {
+            row.addEventListener('click', () => openRequestModal(row));
+        });
+
+        document.querySelectorAll('.request-action-form, .request-action-form button').forEach(el => {
+            el.addEventListener('click', (event) => {
+                event.stopPropagation();
+            });
+        });
+
+        modalCloseBtn.addEventListener('click', closeRequestModal);
+        modalCloseFooterBtn.addEventListener('click', closeRequestModal);
+        modal.addEventListener('click', (event) => {
+            if (event.target === modal) {
+                closeRequestModal();
+            }
+        });
     </script>
 </th:block>
 

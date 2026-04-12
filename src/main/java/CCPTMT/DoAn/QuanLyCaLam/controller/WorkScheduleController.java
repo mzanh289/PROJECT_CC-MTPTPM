@@ -32,6 +32,7 @@ public class WorkScheduleController {
     public String assignForm(Model model) {
         model.addAttribute("users", workScheduleService.getAllEmployees());
         model.addAttribute("shifts", shiftService.getAllShifts());
+        model.addAttribute("formAction", "/admin/schedule/assign");
         return "admin/assign-shift";
     }
 
@@ -132,15 +133,44 @@ public class WorkScheduleController {
     @PostMapping("/{id}/delete")
     public String delete(@PathVariable Integer id,
             RedirectAttributes ra) {
-
-        try {
-            workScheduleService.deleteSchedule(id);
-            ra.addFlashAttribute("success", "Xóa thành công!");
-        } catch (Exception e) {
-            ra.addFlashAttribute("error", "Xóa thất bại!");
-        }
+        ra.addFlashAttribute("error", "Chức năng xóa phân ca đã bị khóa. Vui lòng dùng Sửa.");
 
         return "redirect:/admin/schedule";
+    }
+
+    @GetMapping("/{id}/edit")
+    public String editForm(@PathVariable Integer id, Model model, RedirectAttributes ra) {
+        Optional<WorkSchedule> scheduleOpt = workScheduleService.getScheduleById(id);
+        if (scheduleOpt.isEmpty()) {
+            ra.addFlashAttribute("error", "Không tìm thấy phân ca để sửa.");
+            return "redirect:/admin/schedule";
+        }
+
+        WorkSchedule schedule = scheduleOpt.get();
+        model.addAttribute("users", workScheduleService.getAllEmployees());
+        model.addAttribute("shifts", shiftService.getAllShifts());
+        model.addAttribute("selectedUserId", schedule.getUser().getUserId());
+        model.addAttribute("selectedShiftId", schedule.getShift().getShiftId());
+        model.addAttribute("workDate", schedule.getWorkDate());
+        model.addAttribute("formAction", "/admin/schedule/" + id + "/edit");
+        return "admin/assign-shift";
+    }
+
+    @PostMapping("/{id}/edit")
+    public String update(@PathVariable Integer id,
+            @RequestParam Integer userId,
+            @RequestParam Integer shiftId,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate workDate,
+            RedirectAttributes ra) {
+
+        try {
+            workScheduleService.updateSchedule(id, userId, shiftId, workDate);
+            ra.addFlashAttribute("success", "Cập nhật phân ca thành công!");
+            return "redirect:/admin/schedule/daily?date=" + workDate;
+        } catch (Exception e) {
+            ra.addFlashAttribute("error", e.getMessage());
+            return "redirect:/admin/schedule/" + id + "/edit";
+        }
     }
 
     @GetMapping("/daily")
