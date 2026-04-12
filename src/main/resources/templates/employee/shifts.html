@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+    th:replace="~{fragments/employee/employee :: layout(${pageTitle}, ~{::content}, ${sessionUser})}">
+
+<th:block th:fragment="content">
+    <section>
+        <h2>Ca làm của tôi</h2>
+        <p>Xem ca làm theo ngày hoặc theo tuần của tài khoản bạn.</p>
+
+        <div class="view-toggle">
+            <a class="view-btn" th:classappend="${viewType == 'daily'} ? ' is-active' : ''"
+                th:href="@{/employee/shifts(type='daily',date=${targetDate})}">Theo ngày</a>
+            <a class="view-btn" th:classappend="${viewType == 'weekly'} ? ' is-active' : ''"
+                th:href="@{/employee/shifts(type='weekly',date=${targetDate})}">Theo tuần</a>
+        </div>
+
+        <div class="date-nav" th:if="${viewType == 'daily' or viewType == 'weekly'}">
+            <a class="date-nav-btn" th:if="${viewType == 'daily'}"
+                th:href="@{/employee/shifts(type='daily',date=${targetDate.minusDays(1)})}">← Trước</a>
+            <a class="date-nav-btn" th:if="${viewType == 'weekly'}"
+                th:href="@{/employee/shifts(type='weekly',date=${targetDate.minusDays(7)})}">← Trước</a>
+            <span class="current-date" th:if="${viewType == 'daily'}"
+                th:text="${#temporals.format(targetDate, 'EEEE, dd/MM/yyyy')}">Thứ Hai, 01/01/2024</span>
+            <span class="current-date" th:if="${viewType == 'weekly'}"
+                th:text="${#temporals.format(weekStart, 'dd/MM/yyyy')} + ' - ' + ${#temporals.format(weekEnd, 'dd/MM/yyyy')}">01/01 - 07/01/2024</span>
+            <a class="date-nav-btn" th:if="${viewType == 'daily'}"
+                th:href="@{/employee/shifts(type='daily',date=${targetDate.plusDays(1)})}">Sau →</a>
+            <a class="date-nav-btn" th:if="${viewType == 'weekly'}"
+                th:href="@{/employee/shifts(type='weekly',date=${targetDate.plusDays(7)})}">Sau →</a>
+            <a class="date-nav-btn" th:href="@{/employee/shifts(type=${viewType})}">Hôm nay</a>
+        </div>
+
+        <div th:if="${viewType == 'daily'}">
+            <h3>Lịch ca ngày <span th:text="${#temporals.format(targetDate, 'dd/MM/yyyy')}">01/01/2024</span></h3>
+            <table class="data-table" th:if="${!#lists.isEmpty(shifts)}">
+                <thead>
+                    <tr>
+                        <th>Tên ca</th>
+                        <th>Bắt đầu</th>
+                        <th>Kết thúc</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="item : ${shifts}">
+                        <td th:text="${item.shiftName}">Ca sáng</td>
+                        <td th:text="${item.startTime}">08:00</td>
+                        <td th:text="${item.endTime}">17:00</td>
+                    </tr>
+                </tbody>
+            </table>
+            <div class="helper-text" th:if="${#lists.isEmpty(shifts)}">
+                Bạn chưa có ca nào trong ngày này.
+            </div>
+        </div>
+
+        <div th:if="${viewType == 'weekly'}">
+            <h3>Lịch tuần</h3>
+            <div class="week-grid">
+                <div th:each="day : ${weekDays}" class="week-day-card">
+                    <div class="week-day-header" th:classappend="${day == today} ? ' is-today'">
+                        <div class="week-day-name" th:text="${#temporals.dayOfWeekName(day)}">Thứ Hai</div>
+                        <div class="week-day-date" th:text="${#temporals.format(day, 'dd/MM')}">01/01</div>
+                    </div>
+                    <div class="week-day-body">
+                        <th:block th:with="dayShifts=${schedulesByDate != null ? schedulesByDate.get(day) : null}">
+                            <th:block th:if="${dayShifts != null and not #lists.isEmpty(dayShifts)}">
+                                <div th:each="item : ${dayShifts}" class="shift-item">
+                                    <div class="shift-employee" th:text="${item.shiftName}">Ca sáng</div>
+                                    <div class="shift-time"
+                                        th:text="${item.startTime} + ' - ' + ${item.endTime}">08:00 - 17:00</div>
+                                </div>
+                            </th:block>
+                            <div th:if="${dayShifts == null or #lists.isEmpty(dayShifts)}" class="no-shift">
+                                Không có ca
+                            </div>
+                        </th:block>
+                    </div>
+                </div>
+            </div>
+            <div class="helper-text" th:if="${#lists.isEmpty(shifts)}">
+                Tuần này bạn chưa có ca làm nào.
+            </div>
+        </div>
+    </section>
+</th:block>
+
+</html>

@@ -12,7 +12,11 @@ public interface WorkScheduleRepository extends JpaRepository<WorkSchedule, Inte
 
     List<WorkSchedule> findByUserUserId(Integer userId);
 
+    List<WorkSchedule> findByUserUserIdOrderByWorkDateAsc(Integer userId);
+
     List<WorkSchedule> findByWorkDateBetween(LocalDate fromDate, LocalDate toDate);
+
+    List<WorkSchedule> findByUserUserIdAndWorkDateBetween(Integer userId, LocalDate fromDate, LocalDate toDate);
 
     Optional<WorkSchedule> findByUserUserIdAndWorkDate(Integer userId, LocalDate workDate);
 }

@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+    th:replace="~{fragments/Admin/admin :: layout(${pageTitle}, ~{::content}, ${sessionUser}, '/css/admin/users.css')}">
+
+<th:block th:fragment="content">
+    <section class="users-panel">
+        <div class="users-panel-header">
+            <h2>Danh sách Users</h2>
+            <a class="user-btn user-btn-primary" th:href="@{/admin/users/new}">+ Tạo User</a>
+        </div>
+
+        <form class="filter-form" th:action="@{/admin/users}" method="get">
+            <label for="statusFilter">Lọc trạng thái</label>
+            <select id="statusFilter" name="status">
+                <option value="all" th:selected="${selectedStatus == 'all'}">Tất cả</option>
+                <option value="active" th:selected="${selectedStatus == 'active'}">Active</option>
+                <option value="inactive" th:selected="${selectedStatus == 'inactive'}">Inactive</option>
+            </select>
+            <button type="submit" class="user-btn user-btn-ghost">Lọc</button>
+        </form>
+
+        <div class="user-alert user-alert-success" th:if="${successMessage}" th:text="${successMessage}"></div>
+        <div class="user-alert user-alert-error" th:if="${errorMessage}" th:text="${errorMessage}"></div>
+
+        <div class="table-wrap">
+            <table class="users-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Họ tên</th>
+                        <th>Email</th>
+                        <th>Phone</th>
+                        <th>Trạng thái</th>
+                        <th>Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:if="${#lists.isEmpty(users)}">
+                        <td colspan="6" class="empty-cell">Không có user theo bộ lọc hiện tại.</td>
+                    </tr>
+                    <tr th:each="u : ${users}">
+                        <td th:text="${u.userId}">1</td>
+                        <td th:text="${u.fullName}">Nguyen Van A</td>
+                        <td th:text="${u.email}">a@x.com</td>
+                        <td th:text="${u.phone}">0900000000</td>
+                        <td>
+                            <span class="status-chip" th:classappend="${u.status} ? ' status-active' : ' status-inactive'"
+                                th:text="${u.status} ? 'Active' : 'Inactive'">Active</span>
+                        </td>
+                        <td class="actions-cell">
+                            <a class="user-btn user-btn-ghost" th:href="@{'/admin/users/' + ${u.userId} + '/edit'}">Sửa</a>
+                            <form th:action="@{'/admin/users/' + ${u.userId} + '/delete'}" method="post"
+                                onsubmit="return confirm('Bạn có chắc muốn xóa user này?');">
+                                <button class="user-btn user-btn-danger" type="submit">Xóa</button>
+                            </form>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+</th:block>
+
+</html>
