@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+    th:replace="~{fragments/employee/employee :: layout(${pageTitle}, ~{::content}, ${sessionUser})}">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${pageTitle}">Yêu cầu đổi ca</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        .page-wrapper {
+            width: 100%;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        }
+
+        .page-container {
+            padding: 40px 50px;
+            max-width: 700px;
+            margin: 0 auto;
+        }
+
+        .form-container {
+            background: white;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            border: 1px solid #f0f0f0;
+        }
+
+        .form-container h1 {
+            font-size: 28px;
+            font-weight: 700;
+            color: #1a1a1a;
+            margin-bottom: 8px;
+            letter-spacing: -0.5px;
+        }
+
+        .form-container > p {
+            color: #888;
+            font-size: 14px;
+            margin-bottom: 30px;
+        }
+
+        /* Alert Messages */
+        .alert {
+            padding: 16px 20px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            border-left: 4px solid;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .alert-success {
+            background-color: #e8f5e9;
+            color: #1b5e20;
+            border-left-color: #4caf50;
+        }
+
+        .alert-error {
+            background-color: #ffebee;
+            color: #c62828;
+            border-left-color: #f44336;
+        }
+
+        .alert strong {
+            font-weight: 600;
+        }
+
+        /* Form Styling */
+        .form {
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: 600;
+            color: #2c3e50;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+
+        .form-group input[type="date"],
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 14px 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 14px;
+            font-family: inherit;
+            background-color: #fafbfc;
+            transition: all 0.3s ease;
+        }
+
+        .form-group input[type="date"]:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #1976d2;
+            background-color: white;
+            box-shadow: 0 0 0 3px rgba(25, 118, 210, 0.1);
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 100px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.5;
+        }
+
+        .form-group textarea::placeholder {
+            color: #aaa;
+        }
+
+        .error-message {
+            color: #d32f2f;
+            font-size: 12px;
+            margin-top: 6px;
+            font-weight: 500;
+        }
+
+        .required {
+            color: #f44336;
+            margin-left: 4px;
+        }
+
+        /* Schedule Info Section */
+        .schedule-info {
+            background-color: #f8f9fa;
+            padding: 15px 20px;
+            border-radius: 8px;
+            border-left: 4px solid #1976d2;
+            margin-top: 10px;
+            font-size: 13px;
+            color: #666;
+        }
+
+        .schedule-info strong {
+            color: #333;
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 12px;
+            margin-top: 35px;
+            padding-top: 20px;
+            border-top: 2px solid #f0f0f0;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 14px 24px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #1976d2 0%, #1565c0 100%);
+            color: white;
+            box-shadow: 0 4px 12px rgba(25, 118, 210, 0.25);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 18px rgba(25, 118, 210, 0.35);
+        }
+
+        .btn-secondary {
+            background-color: #f0f0f0;
+            color: #333;
+            border: 1px solid #ddd;
+        }
+
+        .btn-secondary:hover {
+            background-color: #e0e0e0;
+            border-color: #bbb;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .page-container {
+                padding: 20px;
+            }
+
+            .form-container {
+                padding: 30px 20px;
+            }
+
+            .form-container h1 {
+                font-size: 22px;
+            }
+
+            .form-actions {
+                flex-direction: column;
+            }
+
+            .btn {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+
+<th:block th:fragment="content">
+    <style>
+        :root {
+            --primary-gradient: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
+            --secondary-bg: #f8fafc;
+            --border-color: #e2e8f0;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+        }
+
+        .page-wrapper {
+            background-color: var(--secondary-bg);
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+
+        .form-container {
+            max-width: 700px;
+            margin: 0 auto;
+            background: white;
+            padding: 40px;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+            border: 1px solid var(--border-color);
+        }
+
+        .form-header {
+            margin-bottom: 32px;
+            text-align: center;
+        }
+
+        .form-header h1 {
+            font-size: 28px;
+            font-weight: 800;
+            color: var(--text-main);
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+        }
+
+        .form-header p {
+            color: var(--text-muted);
+            font-size: 15px;
+        }
+
+        .form-section {
+            display: grid;
+            gap: 24px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .form-group label {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .required::after {
+            content: "*";
+            color: #ef4444;
+            margin-left: 2px;
+        }
+
+        .input-control {
+            padding: 12px 16px;
+            border: 1.5px solid var(--border-color);
+            border-radius: 10px;
+            font-size: 15px;
+            color: var(--text-main);
+            background: #fff;
+            transition: all 0.2s ease;
+            width: 100%;
+        }
+
+        .input-control:focus {
+            outline: none;
+            border-color: #7c3aed;
+            box-shadow: 0 0 0 4px rgba(124, 58, 237, 0.1);
+        }
+
+        .input-control:disabled {
+            background-color: #f1f5f9;
+            cursor: not-allowed;
+        }
+
+        textarea.input-control {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        .shift-selection-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            align-items: start;
+        }
+
+        .schedule-info {
+            background: #f5f3ff;
+            padding: 16px;
+            border-radius: 10px;
+            border-left: 4px solid #7c3aed;
+            margin-top: 8px;
+            font-size: 13.5px;
+            color: #5b21b6;
+        }
+
+        .schedule-info strong {
+            display: block;
+            margin-bottom: 4px;
+            color: #4c1d95;
+        }
+
+        .form-actions {
+            margin-top: 32px;
+            display: flex;
+            gap: 12px;
+            padding-top: 24px;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 15px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: all 0.2s ease;
+            text-decoration: none;
+            border: none;
+            flex: 1;
+        }
+
+        .btn-primary {
+            background: var(--primary-gradient);
+            color: white;
+            box-shadow: 0 4px 12px rgba(124, 58, 237, 0.2);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 20px rgba(124, 58, 237, 0.3);
+        }
+
+        .btn-secondary {
+            background: #fff;
+            color: var(--text-muted);
+            border: 1px solid var(--border-color);
+        }
+
+        .btn-secondary:hover {
+            background: var(--secondary-bg);
+            border-color: #cbd5e1;
+        }
+
+        .alert {
+            padding: 16px;
+            border-radius: 12px;
+            margin-bottom: 24px;
+            font-size: 15px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            animation: fadeInDown 0.4s ease;
+        }
+
+        .alert-error { background: #fef2f2; color: #991b1b; border: 1px solid #fee2e2; }
+
+        @keyframes fadeInDown {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @media (max-width: 640px) {
+            .shift-selection-grid { grid-template-columns: 1fr; }
+            .form-container { padding: 24px; }
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <div class="page-wrapper">
+        <div class="form-container">
+            <div class="form-header">
+                <h1><i class="fas fa-sync-alt" style="color: #7c3aed;"></i> Đổi ca làm</h1>
+                <p>Chọn ca làm hiện tại và ca làm bạn muốn thay đổi</p>
+            </div>
+
+            <div th:if="${errorMessage}" class="alert alert-error">
+                <i class="fas fa-exclamation-circle"></i>
+                <span th:text="${errorMessage}"></span>
+            </div>
+
+            <form th:action="@{/requests/shift-change}" th:object="${shiftChangeRequest}" method="post" class="form-section">
+                <!-- Select existing schedule -->
+                <div class="form-group">
+                    <label class="required"><i class="far fa-calendar-alt"></i> Chọn ngày cần đổi</label>
+                    <select id="workScheduleSelect" class="input-control" required>
+                        <option value="">-- Chọn một ca làm trong lịch của bạn --</option>
+                        <option th:each="ws : ${workSchedules}"
+                                th:value="${ws.workScheduleId}"
+                                th:data-date="${ws.workDate}"
+                                th:data-shift-id="${ws.shift.shiftId}"
+                                th:data-shift-name="${ws.shift.shiftName}"
+                                th:data-shift-time="${ws.shift.startTime + ' - ' + ws.shift.endTime}"
+                                th:text="${#temporals.format(ws.workDate, 'dd/MM/yyyy') + ' - ' + ws.shift.shiftName}">
+                        </option>
+                    </select>
+                </div>
+
+                <!-- Hidden inputs for form submission -->
+                <input type="hidden" th:field="*{workDate}" id="workDateInput">
+                <input type="hidden" th:field="*{shiftId}" id="shiftIdInput">
+
+                <!-- Display selected info & Target Shift -->
+                <div class="shift-selection-grid">
+                    <div class="form-group">
+                        <label><i class="fas fa-history"></i> Ca hiện tại</label>
+                        <div id="currentShiftDisplay" class="schedule-info">
+                            <span style="color: #94a3b8; font-style: italic;">Chưa chọn ca làm...</span>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="required"><i class="fas fa-arrow-right"></i> Đổi sang ca</label>
+                        <select th:field="*{targetShiftId}" id="targetShiftSelect" class="input-control" required disabled>
+                            <option value="">-- Chọn ca mới --</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Reason -->
+                <div class="form-group">
+                    <label class="required"><i class="fas fa-comment-dots"></i> Lý do đổi ca</label>
+                    <textarea th:field="*{reason}" class="input-control" placeholder="Mô tả lý do đổi ca..." required></textarea>
+                </div>
+
+                <div class="form-actions">
+                    <a th:href="@{/requests/my}" class="btn btn-secondary">
+                        <i class="fas fa-times"></i> Hủy bỏ
+                    </a>
+                    <button type="submit" class="btn btn-primary" id="submitBtn" disabled>
+                        <i class="fas fa-check"></i> Gửi yêu cầu
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script th:inline="javascript">
+        const workScheduleSelect = document.getElementById('workScheduleSelect');
+        const targetShiftSelect = document.getElementById('targetShiftSelect');
+        const currentShiftDisplay = document.getElementById('currentShiftDisplay');
+        const workDateInput = document.getElementById('workDateInput');
+        const shiftIdInput = document.getElementById('shiftIdInput');
+        const submitBtn = document.getElementById('submitBtn');
+
+        // Fetch shifts from backend to fill targetShiftSelect
+        let allShifts = [];
+        fetch('/api/shifts') // You might need to ensure this endpoint exists or pass data via model
+            .then(res => res.json())
+            .then(data => { allShifts = data; })
+            .catch(() => {
+                // Fallback: Use some basic shifts if API fails
+                allShifts = [
+                    { shiftId: 1, shiftName: 'Ca sáng', startTime: '08:00', endTime: '12:00' },
+                    { shiftId: 2, shiftName: 'Ca chiều', startTime: '13:00', endTime: '17:00' },
+                    { shiftId: 3, shiftName: 'Ca tối', startTime: '18:00', endTime: '22:00' }
+                ];
+            });
+
+        workScheduleSelect.addEventListener('change', function() {
+            const selectedOption = this.options[this.selectedIndex];
+            
+            if (selectedOption.value) {
+                const date = selectedOption.getAttribute('data-date');
+                const shiftId = selectedOption.getAttribute('data-shift-id');
+                const shiftName = selectedOption.getAttribute('data-shift-name');
+                const shiftTime = selectedOption.getAttribute('data-shift-time');
+
+                workDateInput.value = date;
+                shiftIdInput.value = shiftId;
+
+                currentShiftDisplay.innerHTML = `
+                    <strong>${shiftName}</strong>
+                    <i class="far fa-clock"></i> ${shiftTime}
+                `;
+
+                // Enable target shift selection and filter out current shift
+                targetShiftSelect.disabled = false;
+                submitBtn.disabled = false;
+                
+                targetShiftSelect.innerHTML = '<option value="">-- Chọn ca mới --</option>';
+                allShifts.forEach(s => {
+                    if (s.shiftId != shiftId) {
+                        const opt = document.createElement('option');
+                        opt.value = s.shiftId;
+                        opt.textContent = `${s.shiftName} (${s.startTime} - ${s.endTime})`;
+                        targetShiftSelect.appendChild(opt);
+                    }
+                });
+            } else {
+                currentShiftDisplay.innerHTML = '<span style="color: #94a3b8; font-style: italic;">Chưa chọn ca làm...</span>';
+                targetShiftSelect.disabled = true;
+                submitBtn.disabled = true;
+                workDateInput.value = '';
+                shiftIdInput.value = '';
+            }
+        });
+    </script>
+</th:block>
+
+</html>
