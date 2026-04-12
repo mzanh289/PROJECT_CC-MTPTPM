@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+    th:replace="~{fragments/employee/employee :: layout(${pageTitle}, ~{::content}, ${sessionUser})}">
+
+<th:block th:fragment="content">
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <style>
+        .attendance-shell {
+            max-width: 980px;
+            margin: 0 auto;
+            padding: 24px 0;
+        }
+
+        .attendance-card {
+            background: #ffffff;
+            border-radius: 18px;
+            box-shadow: 0 20px 40px rgba(15, 23, 42, 0.08);
+            overflow: hidden;
+        }
+
+        .attendance-header {
+            background: linear-gradient(135deg, #2563eb 0%, #0ea5e9 100%);
+            color: #ffffff;
+            padding: 30px 32px;
+        }
+
+        .attendance-header h1 {
+            margin: 0;
+            font-size: 2.1rem;
+            letter-spacing: -0.04em;
+        }
+
+        .attendance-header p {
+            margin: 12px 0 0;
+            color: rgba(255, 255, 255, 0.85);
+            line-height: 1.7;
+        }
+
+        .attendance-body {
+            padding: 32px;
+        }
+
+        .history-actions {
+            display: flex;
+            justify-content: flex-end;
+            margin-bottom: 22px;
+        }
+
+        .history-actions a {
+            border-radius: 14px;
+            background: #3b82f6;
+            color: #ffffff;
+            padding: 12px 22px;
+            text-decoration: none;
+            font-weight: 700;
+            transition: transform 0.2s ease;
+        }
+
+        .history-actions a:hover {
+            transform: translateY(-2px);
+        }
+
+        .history-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        .history-table th,
+        .history-table td {
+            padding: 16px 14px;
+            text-align: left;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .history-table th {
+            color: #64748b;
+            font-size: 0.9rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .history-table tbody tr:hover {
+            background: #f8fafc;
+        }
+
+        .empty-state {
+            margin-top: 24px;
+            padding: 20px 22px;
+            border-radius: 14px;
+            background: #f8fafc;
+            color: #475569;
+            border: 1px solid #e2e8f0;
+        }
+
+        @media (max-width: 900px) {
+            .history-table th,
+            .history-table td {
+                padding: 12px 10px;
+            }
+        }
+    </style>
+
+    <div class="attendance-shell">
+        <div class="attendance-card">
+            <div class="attendance-header">
+                <h1>Lịch sử chấm công</h1>
+                <p>Xem lại các bản ghi chấm công gần nhất của bạn.</p>
+            </div>
+            <div class="attendance-body">
+                <div class="history-actions">
+                    <a th:href="@{/employee/attendance}">Quay lại trang chấm công</a>
+                </div>
+                <div th:if="${attendanceHistory != null and !attendanceHistory.isEmpty()}">
+                    <table class="history-table">
+                        <thead>
+                            <tr>
+                                <th>Ngày</th>
+                                <th>Check-in</th>
+                                <th>Check-out</th>
+                                <th>Trạng thái</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="record : ${attendanceHistory}">
+                                <td th:text="${#temporals.format(record.workDate, 'dd/MM/yyyy')}">10/04/2026</td>
+                                <td th:text="${record.checkIn != null ? #temporals.format(record.checkIn, 'HH:mm') : '---'}">08:00</td>
+                                <td th:text="${record.checkOut != null ? #temporals.format(record.checkOut, 'HH:mm') : '---'}">17:00</td>
+                                <td th:text="${record.status != null ? (record.status.name() == 'DI_LAM' ? 'Đi làm' : record.status.name() == 'TRE' ? 'Trễ' : record.status.name()) : 'Chưa rõ'}">Đi làm</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="empty-state" th:if="${attendanceHistory == null or attendanceHistory.isEmpty()}">
+                    <p>Hiện tại bạn chưa có bản ghi chấm công.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</th:block>
+
+</html>

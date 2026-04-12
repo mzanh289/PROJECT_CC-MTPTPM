@@ -1,14 +1,23 @@
 <!DOCTYPE html>
-<html lang="vi">
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+    th:replace="~{fragments/Admin/admin :: layout('Quản lý ca làm', ~{::content}, ${sessionUser}, null)}">
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quản lý ca làm</title>
+<th:block th:fragment="content">
     <link rel="stylesheet" th:href="@{/css/style.css}">
-</head>
+    <style>
+        .role-content {
+            background: transparent !important;
+            border: none !important;
+            padding: 0 !important;
+            box-shadow: none !important;
+        }
 
-<body class="jsp-body">
+        .schedule-shell {
+            max-width: 100%;
+            margin: 0;
+            padding: 0;
+        }
+    </style>
     <div class="schedule-shell">
         <header class="hero-panel">
             <div class="hero-copy">
@@ -22,8 +31,6 @@
             <div class="hero-actions">
                 <a class="button" th:href="@{/admin/shifts/new}"><img class="icon-inline"
                         th:src="@{/images/icons/icon10.svg}" alt="">Tạo ca mới</a>
-                <a class="button-ghost" th:href="@{/admin/schedule}"><img class="icon-inline"
-                        th:src="@{/images/icons/icon1.svg}" alt="">Quay về lịch phân ca</a>
             </div>
         </header>
         <section class="surface-card">
@@ -62,6 +69,6 @@
             </table>
         </section>
     </div>
-</body>
+</th:block>
 
 </html>
