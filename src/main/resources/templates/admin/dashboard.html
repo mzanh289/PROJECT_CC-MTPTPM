@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+    th:replace="~{fragments/Admin/admin :: layout(${pageTitle}, ~{::content}, ${sessionUser}, null)}">
+
+<th:block th:fragment="content">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        /* Break out of standard white box layout */
+        .role-content {
+            background: transparent !important;
+            border: none !important;
+            padding: 0 !important;
+            box-shadow: none !important;
+        }
+        .dashboard-header {
+            margin-bottom: 24px;
+        }
+        .dashboard-header h2 {
+            font-size: 24px;
+            margin: 0;
+            color: #111827;
+        }
+        .dashboard-header p {
+            color: #6b7280;
+            margin-top: 4px;
+        }
+        .stat-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            margin-bottom: 32px;
+        }
+        .stat-card-premium {
+            background: linear-gradient(135deg, rgba(255,255,255,0.95), rgba(249,250,251,0.85));
+            border: 1px solid rgba(229, 231, 235, 0.5);
+            border-radius: 16px;
+            padding: 24px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
+            backdrop-filter: blur(8px);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .stat-card-premium:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.06);
+        }
+        .stat-icon-wrapper {
+            width: 56px;
+            height: 56px;
+            border-radius: 14px;
+            display: grid;
+            place-items: center;
+        }
+        .icon-users { background: #dbeafe; color: #1e40af; }
+        .icon-shifts { background: #dcfce7; color: #166534; }
+        .icon-calendar { background: #fef3c7; color: #b45309; }
+        .stat-info h4 {
+            margin: 0;
+            font-size: 14px;
+            color: #6b7280;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        .stat-info p {
+            margin: 4px 0 0;
+            font-size: 28px;
+            font-weight: 800;
+            color: #111827;
+        }
+        .chart-container-premium {
+            background: #ffffff;
+            border-radius: 16px;
+            padding: 24px;
+            border: 1px solid #f3f4f6;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.02);
+        }
+        .chart-header {
+            margin-bottom: 20px;
+        }
+        .chart-header h3 {
+            margin: 0;
+            font-size: 18px;
+            color: #111827;
+        }
+    </style>
+    <div class="dashboard-header">
+        <h2>Xin chào, <span th:text="${sessionUser.fullName}">Admin</span>! 👋</h2>
+        <p th:text="${pageDescription}">Khám phá thông số hệ thống của bạn hôm nay.</p>
+    </div>
+
+    <!-- Stats Row -->
+    <div class="stat-grid">
+        <div class="stat-card-premium">
+            <div class="stat-icon-wrapper icon-users">
+                <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                </svg>
+            </div>
+            <div class="stat-info">
+                <h4>Tổng nhân viên</h4>
+                <p th:text="${totalEmployees}">0</p>
+            </div>
+        </div>
+
+        <div class="stat-card-premium">
+            <div class="stat-icon-wrapper icon-shifts">
+                <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+            </div>
+            <div class="stat-info">
+                <h4>Ca mẫu có sẵn</h4>
+                <p th:text="${totalShifts}">0</p>
+            </div>
+        </div>
+
+        <div class="stat-card-premium">
+            <div class="stat-icon-wrapper icon-calendar">
+                <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                </svg>
+            </div>
+            <div class="stat-info">
+                <h4>Phân ca tuần này</h4>
+                <p th:text="${weeklySchedulesCount}">0</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Chart Row -->
+    <div class="chart-container-premium">
+        <div class="chart-header">
+            <h3>Tần suất phân ca hiện tại (Tuần)</h3>
+        </div>
+        <canvas id="scheduleChart" width="400" height="120"></canvas>
+    </div>
+
+    <!-- Thymeleaf inline JS data binding for Chart.js -->
+    <script th:inline="javascript">
+        document.addEventListener("DOMContentLoaded", function () {
+            // Nhận mảng dữ liệu từ model
+            const labels = /*[[${chartLabels}]]*/ ['Mon', 'Tue', 'Wed'];
+            const data = /*[[${chartData}]]*/ [0, 0, 0];
+
+            const ctx = document.getElementById('scheduleChart').getContext('2d');
+            
+            // Tạo gradient đẹp cho cột
+            const gradient = ctx.createLinearGradient(0, 0, 0, 400);
+            gradient.addColorStop(0, 'rgba(15, 118, 110, 0.8)');
+            gradient.addColorStop(1, 'rgba(20, 184, 166, 0.2)');
+
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Số lượng nhân viên được xếp ca',
+                        data: data,
+                        backgroundColor: gradient,
+                        borderColor: '#0f766e',
+                        borderWidth: 1,
+                        borderRadius: 6, // Bo góc các thanh biểu đồ
+                        barPercentage: 0.6,
+                        categoryPercentage: 0.8
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(15, 23, 43, 0.9)',
+                            padding: 12,
+                            titleFont: { size: 14, weight: 'bold' },
+                            bodyFont: { size: 14 },
+                            displayColors: false,
+                            cornerRadius: 8
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: { precision: 0 },
+                            grid: {
+                                color: '#f3f4f6',
+                                drawBorder: false
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false,
+                                drawBorder: false
+                            }
+                        }
+                    }
+                }
+            });
+        });
+    </script>
+</th:block>
+
+</html>

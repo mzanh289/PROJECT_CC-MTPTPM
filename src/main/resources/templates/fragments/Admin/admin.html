@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org" th:fragment="layout(pageTitle, content, sessionUser, extraCss)">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${pageTitle}">Admin</title>
+    <link rel="stylesheet" th:href="@{/css/shared/layout.css}">
+    <link rel="stylesheet" th:if="${extraCss != null}" th:href="${extraCss}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+
+<body>
+    <div class="role-shell">
+        <aside class="role-sidebar">
+            <div class="role-sidebar-header">
+                <div class="header-top">
+                    <h2>Admin</h2>
+                </div>
+
+                <form th:action="@{/logout}" method="post" class="logout-form">
+                    <button type="submit" class="logout-link">Đăng xuất</button>
+                </form>
+            </div>
+
+            <nav class="role-nav">
+                <a th:href="@{/admin/dashboard}" class="nav-item">Dashboard</a>
+                <a th:href="@{/admin/users}" class="nav-item">Users</a>
+                <a th:href="@{/admin/shifts}" class="nav-item">Ca làm việc</a>
+                <a th:href="@{/admin/schedule}" class="nav-item">Lịch phân ca</a>
+                <a th:href="@{/admin/requests}" class="nav-item">Yêu cầu</a>
+                <a th:href="@{/admin/reports}" class="nav-item">Báo cáo</a>
+            </nav>
+        </aside>
+        <main class="role-main">
+            <header class="role-header">
+                <h1 th:text="${pageTitle}">Admin Dashboard</h1>
+            </header>
+            <section class="role-content" th:replace="${content}"></section>
+        </main>
+    </div>
+</body>
+
+</html>

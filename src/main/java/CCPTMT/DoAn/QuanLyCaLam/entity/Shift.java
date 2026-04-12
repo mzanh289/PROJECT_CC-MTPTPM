@@ -4,6 +4,8 @@ import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.springframework.format.annotation.DateTimeFormat;
+
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -35,9 +37,11 @@ public class Shift {
     @Column(name = "ShiftName", nullable = false, length = 100, columnDefinition = "nvarchar(100)")
     private String shiftName;
 
+    @DateTimeFormat(pattern = "HH:mm")
     @Column(name = "StartTime", nullable = false)
     private LocalTime startTime;
 
+    @DateTimeFormat(pattern = "HH:mm")
     @Column(name = "EndTime", nullable = false)
     private LocalTime endTime;
 

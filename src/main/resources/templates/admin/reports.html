@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+    th:replace="~{fragments/Admin/admin :: layout(${pageTitle}, ~{::content}, ${sessionUser}, null)}">
+
+<th:block th:fragment="content">
+    <style>
+        .report-shell {
+            display: grid;
+            gap: 20px;
+        }
+
+        .report-filter-card,
+        .report-summary-grid,
+        .report-chart-card,
+        .report-table-card {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 14px;
+            box-shadow: 0 8px 20px rgba(15, 23, 42, 0.06);
+        }
+
+        .report-filter-card {
+            padding: 18px;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: flex-end;
+            gap: 14px;
+        }
+
+        .report-input {
+            display: grid;
+            gap: 6px;
+            min-width: 180px;
+        }
+
+        .report-input label {
+            font-weight: 600;
+            color: #334155;
+            font-size: 0.92rem;
+        }
+
+        .report-input select,
+        .report-input input {
+            border: 1px solid #cbd5e1;
+            border-radius: 10px;
+            padding: 10px 12px;
+            font-size: 0.95rem;
+        }
+
+        .report-actions {
+            display: flex;
+            gap: 10px;
+            margin-left: auto;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            border: none;
+            border-radius: 10px;
+            padding: 10px 14px;
+            font-weight: 700;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn-primary {
+            background: #0f172a;
+            color: #ffffff;
+        }
+
+        .btn-outline {
+            background: #f8fafc;
+            color: #0f172a;
+            border: 1px solid #cbd5e1;
+        }
+
+        .report-summary-grid {
+            padding: 18px;
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 12px;
+        }
+
+        .summary-item {
+            border-radius: 12px;
+            padding: 14px;
+            border: 1px solid #e2e8f0;
+            background: #f8fafc;
+        }
+
+        .summary-item .label {
+            color: #475569;
+            font-size: 0.88rem;
+            margin-bottom: 8px;
+            display: block;
+        }
+
+        .summary-item .value {
+            color: #0f172a;
+            font-size: 1.55rem;
+            font-weight: 800;
+            display: block;
+            line-height: 1.1;
+        }
+
+        .summary-good {
+            background: #ecfdf5;
+            border-color: #a7f3d0;
+        }
+
+        .summary-late {
+            background: #fff7ed;
+            border-color: #fed7aa;
+        }
+
+        .summary-absent {
+            background: #fef2f2;
+            border-color: #fecaca;
+        }
+
+        .report-chart-card,
+        .report-table-card {
+            padding: 18px;
+        }
+
+        .report-title {
+            margin: 0 0 12px;
+            color: #0f172a;
+            font-size: 1.05rem;
+        }
+
+        .period-note {
+            margin: 0;
+            color: #475569;
+        }
+
+        .chart-wrap {
+            height: 320px;
+        }
+
+        .report-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .report-table th,
+        .report-table td {
+            border-bottom: 1px solid #e2e8f0;
+            padding: 10px 8px;
+            text-align: left;
+            font-size: 0.92rem;
+        }
+
+        .report-table th {
+            color: #334155;
+            background: #f8fafc;
+        }
+
+        .status-chip {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 999px;
+            font-size: 0.82rem;
+            font-weight: 700;
+        }
+
+        .chip-ontime {
+            color: #065f46;
+            background: #d1fae5;
+        }
+
+        .chip-late {
+            color: #9a3412;
+            background: #ffedd5;
+        }
+
+        .chip-absent {
+            color: #991b1b;
+            background: #fee2e2;
+        }
+
+        @media (max-width: 960px) {
+            .report-summary-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+
+            .report-actions {
+                margin-left: 0;
+            }
+        }
+
+        @media (max-width: 640px) {
+            .report-summary-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .report-table {
+                font-size: 0.85rem;
+            }
+        }
+    </style>
+
+    <div class="report-shell">
+        <form class="report-filter-card" th:action="@{/admin/reports}" method="get">
+            <div class="report-input">
+                <label for="period">Kỳ báo cáo</label>
+                <select id="period" name="period">
+                    <option value="day" th:selected="${selectedPeriod == 'day'}">Ngày</option>
+                    <option value="week" th:selected="${selectedPeriod == 'week'}">Tuần</option>
+                    <option value="month" th:selected="${selectedPeriod == 'month'}">Tháng</option>
+                </select>
+            </div>
+            <div class="report-input">
+                <label for="date">Mốc thời gian</label>
+                <input id="date" type="date" name="date" th:value="${selectedDate}">
+            </div>
+            <div class="report-actions">
+                <button type="submit" class="btn btn-primary">Xem báo cáo</button>
+                <a class="btn btn-outline"
+                    th:href="@{/admin/reports/export-pdf(period=${selectedPeriod}, date=${selectedDate})}">Xuất PDF</a>
+            </div>
+        </form>
+
+        <div class="report-summary-grid">
+            <div class="summary-item">
+                <span class="label">Tổng phân ca</span>
+                <span class="value" th:text="${reportData.totalAssigned}">0</span>
+            </div>
+            <div class="summary-item summary-good">
+                <span class="label">Đi đúng giờ</span>
+                <span class="value" th:text="${reportData.onTimeCount}">0</span>
+            </div>
+            <div class="summary-item summary-late">
+                <span class="label">Đi trễ</span>
+                <span class="value" th:text="${reportData.lateCount}">0</span>
+            </div>
+            <div class="summary-item summary-absent">
+                <span class="label">Nghỉ bỏ ca</span>
+                <span class="value" th:text="${reportData.absentCount}">0</span>
+            </div>
+        </div>
+
+        <div class="report-chart-card">
+            <h3 class="report-title">Biểu đồ chuyên cần theo ngày</h3>
+            <p class="period-note"
+                th:text="${reportData.periodLabel + ': ' + #temporals.format(reportData.fromDate, 'dd/MM/yyyy') + ' - ' + #temporals.format(reportData.toDate, 'dd/MM/yyyy')}">
+                Theo ngay
+            </p>
+            <div class="chart-wrap">
+                <canvas id="attendanceChart"></canvas>
+            </div>
+        </div>
+
+        <div class="report-table-card">
+            <h3 class="report-title">Chi tiết nhân viên theo phân ca</h3>
+            <div style="overflow:auto;">
+                <table class="report-table">
+                    <thead>
+                        <tr>
+                            <th>Ngày</th>
+                            <th>Ma NV</th>
+                            <th>Nhân viên</th>
+                            <th>Ca làm</th>
+                            <th>Check-in</th>
+                            <th>Check-out</th>
+                            <th>Trạng thái</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:if="${#lists.isEmpty(reportData.rows)}">
+                            <td colspan="7" style="text-align:center; color:#64748b;">Không có dữ liệu trong kỳ đã chọn</td>
+                        </tr>
+                        <tr th:each="row : ${reportData.rows}">
+                            <td th:text="${#temporals.format(row.workDate, 'dd/MM/yyyy')}">01/01/2026</td>
+                            <td th:text="${row.userId}">1</td>
+                            <td th:text="${row.fullName}">Nguyen Van A</td>
+                            <td th:text="${row.shiftNames}">Ca sang</td>
+                            <td th:text="${row.checkIn != null ? #temporals.format(row.checkIn, 'HH:mm') : '-'}">08:00</td>
+                            <td th:text="${row.checkOut != null ? #temporals.format(row.checkOut, 'HH:mm') : '-'}">17:00</td>
+                            <td>
+                                <span class="status-chip"
+                                    th:classappend="${row.status.name() == 'DI_LAM' ? ' chip-ontime' : (row.status.name() == 'TRE' ? ' chip-late' : ' chip-absent')}"
+                                    th:text="${row.statusLabel}">Đi đúng giờ</span>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+    <script th:inline="javascript">
+        const labels = /*[[${reportData.chartLabels}]]*/ [];
+        const onTimeSeries = /*[[${reportData.onTimeSeries}]]*/ [];
+        const lateSeries = /*[[${reportData.lateSeries}]]*/ [];
+        const absentSeries = /*[[${reportData.absentSeries}]]*/ [];
+
+        const ctx = document.getElementById('attendanceChart');
+        if (ctx) {
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels,
+                    datasets: [
+                        {
+                            label: 'Đi đúng giờ',
+                            data: onTimeSeries,
+                            backgroundColor: '#16a34a'
+                        },
+                        {
+                            label: 'Đi trễ',
+                            data: lateSeries,
+                            backgroundColor: '#f59e0b'
+                        },
+                        {
+                            label: 'Nghỉ bỏ ca',
+                            data: absentSeries,
+                            backgroundColor: '#ef4444'
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: {
+                        mode: 'index',
+                        intersect: false
+                    },
+                    scales: {
+                        x: {
+                            stacked: true
+                        },
+                        y: {
+                            stacked: true,
+                            beginAtZero: true,
+                            ticks: {
+                                precision: 0
+                            }
+                        }
+                    }
+                }
+            });
+        }
+    </script>
+</th:block>
+
+</html>
