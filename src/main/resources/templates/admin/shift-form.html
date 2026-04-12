@@ -190,3 +190,553 @@
 </body>
 
 </html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+    th:replace="~{fragments/Admin/admin :: layout(${''}, ~{::content}, ${sessionUser}, null)}">
+
+<th:block th:fragment="content">
+<style>
+    .role-content {
+        background: transparent !important;
+        border: none !important;
+        padding: 0 !important;
+        box-shadow: none !important;
+    }
+
+    /* ── Page shell ── */
+    .sf-shell {
+        max-width: 1100px;
+        margin: 0 auto;
+        display: grid;
+        gap: 24px;
+        padding: 0;
+    }
+
+    /* ── Hero ── */
+    .sf-hero {
+        background: rgba(255,255,255,0.92);
+        border: 1px solid rgba(15,23,43,0.09);
+        border-radius: 24px;
+        padding: 24px 28px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        backdrop-filter: blur(12px);
+        box-shadow: 0 12px 40px rgba(15,23,43,0.07);
+    }
+    .sf-eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 6px 12px;
+        border-radius: 999px;
+        background: #ede9fe;
+        color: #6d28d9;
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        margin-bottom: 10px;
+    }
+    .sf-title {
+        margin: 0 0 5px;
+        font-size: clamp(22px, 3vw, 30px);
+        font-weight: 800;
+        letter-spacing: -0.025em;
+        color: #0f172b;
+    }
+    .sf-subtitle {
+        margin: 0;
+        color: #64748b;
+        font-size: 14px;
+    }
+    .sf-back {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        padding: 10px 18px;
+        border-radius: 50px;
+        border: 1px solid #e2e8f0;
+        background: #f8fafc;
+        color: #475569;
+        font-size: 13px;
+        font-weight: 700;
+        text-decoration: none;
+        transition: background 0.15s, transform 0.15s;
+        white-space: nowrap;
+    }
+    .sf-back:hover {
+        background: #f1f5f9;
+        transform: translateX(-2px);
+    }
+
+    /* ── Split body ── */
+    .sf-body {
+        display: grid;
+        grid-template-columns: 1fr 380px;
+        gap: 20px;
+        align-items: start;
+    }
+    @media (max-width: 860px) {
+        .sf-body { grid-template-columns: 1fr; }
+    }
+
+    /* ── Form card ── */
+    .sf-form-card {
+        background: rgba(255,255,255,0.95);
+        border: 1px solid rgba(15,23,43,0.08);
+        border-radius: 24px;
+        padding: 32px;
+        box-shadow: 0 8px 32px rgba(15,23,43,0.06);
+    }
+    .sf-section-label {
+        font-size: 11px;
+        font-weight: 800;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: #94a3b8;
+        margin: 0 0 20px;
+    }
+    .sf-divider {
+        height: 1px;
+        background: rgba(15,23,43,0.07);
+        margin: 24px 0;
+    }
+
+    /* ── Field ── */
+    .sf-field {
+        display: grid;
+        gap: 8px;
+        margin-bottom: 20px;
+    }
+    .sf-field:last-of-type { margin-bottom: 0; }
+
+    .sf-label {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 13px;
+        font-weight: 700;
+        color: #374151;
+    }
+    .sf-label i {
+        color: #a78bfa;
+        font-size: 12px;
+    }
+
+    .sf-input-wrap {
+        position: relative;
+    }
+    .sf-input {
+        width: 100%;
+        padding: 13px 16px 13px 44px;
+        border: 1.5px solid #e5e7eb;
+        border-radius: 14px;
+        font-size: 15px;
+        color: #0f172b;
+        background: #fafafa;
+        outline: none;
+        transition: border-color 0.18s, box-shadow 0.18s, background 0.18s;
+        box-sizing: border-box;
+    }
+    .sf-input:focus {
+        border-color: #818cf8;
+        background: #fff;
+        box-shadow: 0 0 0 4px rgba(129,140,248,0.15);
+    }
+    .sf-input-icon {
+        position: absolute;
+        left: 15px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #a78bfa;
+        font-size: 14px;
+        pointer-events: none;
+    }
+    .sf-hint {
+        font-size: 12px;
+        color: #94a3b8;
+        margin: 0;
+    }
+
+    /* time row */
+    .sf-time-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 14px;
+    }
+
+    /* ── Form actions ── */
+    .sf-actions {
+        display: flex;
+        gap: 10px;
+        justify-content: flex-end;
+        margin-top: 28px;
+        padding-top: 22px;
+        border-top: 1px solid rgba(15,23,43,0.07);
+    }
+    .sf-btn-submit {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 13px 28px;
+        border-radius: 50px;
+        border: none;
+        background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
+        color: #fff;
+        font-size: 14px;
+        font-weight: 700;
+        cursor: pointer;
+        box-shadow: 0 4px 18px rgba(109,40,217,0.35);
+        transition: transform 0.16s, box-shadow 0.16s;
+    }
+    .sf-btn-submit:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 24px rgba(109,40,217,0.45);
+    }
+    .sf-btn-cancel {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        padding: 13px 22px;
+        border-radius: 50px;
+        border: 1px solid #e2e8f0;
+        background: #f8fafc;
+        color: #64748b;
+        font-size: 14px;
+        font-weight: 700;
+        text-decoration: none;
+        cursor: pointer;
+        transition: background 0.15s, transform 0.15s;
+    }
+    .sf-btn-cancel:hover {
+        background: #f1f5f9;
+        transform: translateY(-1px);
+    }
+
+    /* ── Preview card ── */
+    .sf-preview {
+        background: rgba(255,255,255,0.95);
+        border: 1px solid rgba(15,23,43,0.08);
+        border-radius: 24px;
+        padding: 28px;
+        box-shadow: 0 8px 32px rgba(15,23,43,0.06);
+        position: sticky;
+        top: 24px;
+    }
+    .sf-preview-label {
+        font-size: 11px;
+        font-weight: 800;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: #94a3b8;
+        margin: 0 0 20px;
+    }
+
+    .sf-preview-card {
+        border-radius: 18px;
+        background: linear-gradient(135deg, #ede9fe 0%, #f5f3ff 100%);
+        border: 1px solid #ddd6fe;
+        padding: 22px;
+        margin-bottom: 20px;
+        position: relative;
+        overflow: hidden;
+    }
+    .sf-preview-card::before {
+        content: '';
+        position: absolute;
+        top: -30px; right: -30px;
+        width: 120px; height: 120px;
+        border-radius: 50%;
+        background: rgba(167,139,250,0.15);
+    }
+    .sf-badge-type {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 4px 12px;
+        border-radius: 999px;
+        font-size: 12px;
+        font-weight: 700;
+        margin-bottom: 14px;
+        background: #7c3aed;
+        color: #fff;
+        transition: background 0.3s;
+    }
+    .sf-preview-name {
+        font-size: 22px;
+        font-weight: 800;
+        color: #3b0764;
+        margin: 0 0 16px;
+        min-height: 30px;
+        letter-spacing: -0.02em;
+    }
+    .sf-preview-time-row {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    .sf-preview-time-box {
+        flex: 1;
+        background: rgba(255,255,255,0.75);
+        border-radius: 12px;
+        padding: 10px 14px;
+        text-align: center;
+    }
+    .sf-preview-time-box .tbx-label {
+        font-size: 10px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: #7c3aed;
+    }
+    .sf-preview-time-box .tbx-value {
+        font-size: 18px;
+        font-weight: 800;
+        color: #3b0764;
+        margin-top: 2px;
+    }
+    .sf-preview-arrow {
+        color: #a78bfa;
+        font-size: 16px;
+    }
+
+    /* Duration & tips */
+    .sf-preview-info {
+        display: grid;
+        gap: 12px;
+    }
+    .sf-info-row {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 13px;
+        color: #475569;
+    }
+    .sf-info-icon {
+        width: 32px;
+        height: 32px;
+        border-radius: 10px;
+        background: #ede9fe;
+        display: grid;
+        place-items: center;
+        color: #7c3aed;
+        font-size: 13px;
+        flex-shrink: 0;
+    }
+    .sf-info-text strong {
+        display: block;
+        font-weight: 700;
+        color: #1e293b;
+        font-size: 13px;
+    }
+    .sf-info-text span {
+        color: #94a3b8;
+        font-size: 12px;
+    }
+</style>
+
+<div class="sf-shell">
+
+    <!-- HERO -->
+    <header class="sf-hero">
+        <div>
+            <div class="sf-eyebrow">
+                <i class="fa-solid fa-calendar-days"></i>
+                Quản lý ca làm
+            </div>
+            <h1 class="sf-title" th:text="${formTitle != null ? formTitle : 'Ca làm'}">Tạo ca mới</h1>
+            <p class="sf-subtitle">Thiết lập thông tin ca làm việc cho nhân viên</p>
+        </div>
+        <a class="sf-back" th:href="@{/admin/shifts}">
+            <i class="fa-solid fa-arrow-left"></i>
+            Quay lại
+        </a>
+    </header>
+
+    <!-- BODY -->
+    <div class="sf-body">
+
+        <!-- LEFT: Form -->
+        <div class="sf-form-card">
+            <p class="sf-section-label"><i class="fa-solid fa-pen-to-square" style="color:#a78bfa; margin-right:6px;"></i>Thông tin ca làm</p>
+
+            <form th:action="${formAction}" method="post" id="shiftForm">
+
+                <!-- Tên ca -->
+                <div class="sf-field">
+                    <label class="sf-label" for="shiftName">
+                        <i class="fa-solid fa-tag"></i>
+                        Tên ca làm
+                    </label>
+                    <div class="sf-input-wrap">
+                        <i class="sf-input-icon fa-solid fa-id-card"></i>
+                        <input class="sf-input" type="text" id="shiftName" name="shiftName"
+                               th:value="${shift.shiftName}" required
+                               placeholder="Ví dụ: Ca sáng, Ca chiều..." />
+                    </div>
+                    <p class="sf-hint">Đặt tên ngắn gọn, dễ nhận biết</p>
+                </div>
+
+                <div class="sf-divider"></div>
+                <p class="sf-section-label" style="margin-top:0;"><i class="fa-regular fa-clock" style="color:#a78bfa; margin-right:6px;"></i>Khung giờ làm việc</p>
+
+                <!-- Giờ -->
+                <div class="sf-time-row">
+                    <div class="sf-field">
+                        <label class="sf-label" for="startTime">
+                            <i class="fa-solid fa-hourglass-start"></i>
+                            Giờ bắt đầu
+                        </label>
+                        <div class="sf-input-wrap">
+                            <i class="sf-input-icon fa-regular fa-clock"></i>
+                            <input class="sf-input" type="time" id="startTime" name="startTime"
+                                   th:value="${shift.startTime}" required />
+                        </div>
+                    </div>
+                    <div class="sf-field">
+                        <label class="sf-label" for="endTime">
+                            <i class="fa-solid fa-hourglass-end"></i>
+                            Giờ kết thúc
+                        </label>
+                        <div class="sf-input-wrap">
+                            <i class="sf-input-icon fa-regular fa-clock"></i>
+                            <input class="sf-input" type="time" id="endTime" name="endTime"
+                                   th:value="${shift.endTime}" required />
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Actions -->
+                <div class="sf-actions">
+                    <a class="sf-btn-cancel" th:href="@{/admin/shifts}">
+                        <i class="fa-solid fa-xmark"></i>
+                        Hủy
+                    </a>
+                    <button type="submit" class="sf-btn-submit">
+                        <i class="fa-solid fa-floppy-disk"></i>
+                        Lưu ca làm
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- RIGHT: Live Preview -->
+        <div class="sf-preview">
+            <p class="sf-preview-label"><i class="fa-solid fa-eye" style="color:#a78bfa; margin-right:6px;"></i>Xem trước</p>
+
+            <div class="sf-preview-card">
+                <div class="sf-badge-type" id="prevBadge">
+                    <i class="fa-solid fa-sun"></i>
+                    <span id="prevBadgeText">Ca ngày</span>
+                </div>
+                <div class="sf-preview-name" id="prevName">Tên ca làm</div>
+                <div class="sf-preview-time-row">
+                    <div class="sf-preview-time-box">
+                        <div class="tbx-label">Bắt đầu</div>
+                        <div class="tbx-value" id="prevStart">--:--</div>
+                    </div>
+                    <i class="sf-preview-arrow fa-solid fa-arrow-right"></i>
+                    <div class="sf-preview-time-box">
+                        <div class="tbx-label">Kết thúc</div>
+                        <div class="tbx-value" id="prevEnd">--:--</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="sf-preview-info">
+                <div class="sf-info-row">
+                    <div class="sf-info-icon"><i class="fa-solid fa-stopwatch"></i></div>
+                    <div class="sf-info-text">
+                        <strong id="prevDuration">-- giờ</strong>
+                        <span>Tổng thời gian làm việc</span>
+                    </div>
+                </div>
+                <div class="sf-info-row">
+                    <div class="sf-info-icon"><i class="fa-solid fa-calendar-check"></i></div>
+                    <div class="sf-info-text">
+                        <strong>Ca theo ngày</strong>
+                        <span>Áp dụng cho tất cả ngày trong tuần</span>
+                    </div>
+                </div>
+                <div class="sf-info-row">
+                    <div class="sf-info-icon"><i class="fa-solid fa-users"></i></div>
+                    <div class="sf-info-text">
+                        <strong>Phân ca thủ công</strong>
+                        <span>Admin phân công cho từng nhân viên</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script>
+    const nameInput  = document.getElementById('shiftName');
+    const startInput = document.getElementById('startTime');
+    const endInput   = document.getElementById('endTime');
+
+    const prevName     = document.getElementById('prevName');
+    const prevStart    = document.getElementById('prevStart');
+    const prevEnd      = document.getElementById('prevEnd');
+    const prevDuration = document.getElementById('prevDuration');
+    const prevBadge    = document.getElementById('prevBadge');
+    const prevBadgeText= document.getElementById('prevBadgeText');
+
+    function toMinutes(t) {
+        if (!t) return null;
+        const [h, m] = t.split(':').map(Number);
+        return h * 60 + m;
+    }
+
+    function fmtDuration(mins) {
+        if (mins <= 0) return '-- giờ';
+        const h = Math.floor(mins / 60);
+        const m = mins % 60;
+        return m > 0 ? `${h} giờ ${m} phút` : `${h} giờ`;
+    }
+
+    function shiftType(startMins) {
+        if (startMins === null) return { text: 'Ca ngày', icon: 'fa-sun', bg: '#7c3aed' };
+        if (startMins < 360)  return { text: 'Ca đêm khuya', icon: 'fa-moon',   bg: '#1e293b' };
+        if (startMins < 720)  return { text: 'Ca sáng',      icon: 'fa-sun',    bg: '#d97706' };
+        if (startMins < 1020) return { text: 'Ca chiều',     icon: 'fa-cloud-sun', bg: '#0369a1' };
+        return                       { text: 'Ca tối',       icon: 'fa-moon',   bg: '#4338ca' };
+    }
+
+    function updatePreview() {
+        // Name
+        const name = nameInput.value.trim();
+        prevName.textContent = name || 'Tên ca làm';
+
+        // Times
+        prevStart.textContent = startInput.value || '--:--';
+        prevEnd.textContent   = endInput.value   || '--:--';
+
+        // Duration
+        const sMin = toMinutes(startInput.value);
+        const eMin = toMinutes(endInput.value);
+        let dur = null;
+        if (sMin !== null && eMin !== null) {
+            dur = eMin > sMin ? eMin - sMin : (eMin + 1440 - sMin);
+        }
+        prevDuration.textContent = fmtDuration(dur);
+
+        // Badge
+        const type = shiftType(sMin);
+        prevBadgeText.textContent = type.text;
+        prevBadge.querySelector('i').className = `fa-solid ${type.icon}`;
+        prevBadge.style.background = type.bg;
+    }
+
+    nameInput.addEventListener('input',  updatePreview);
+    startInput.addEventListener('change', updatePreview);
+    endInput.addEventListener('change',   updatePreview);
+
+    // Khởi tạo preview với giá trị sẵn có (khi edit)
+    updatePreview();
+</script>
+</th:block>
+
+</html>
