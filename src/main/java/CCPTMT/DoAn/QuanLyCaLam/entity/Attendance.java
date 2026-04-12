@@ -16,6 +16,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -28,12 +29,9 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(
-    name = "attendance",
-    uniqueConstraints = {
-        @UniqueConstraint(name = "uk_attendance_user_date", columnNames = {"UserID", "WorkDate"})
-    }
-)
+@Table(name = "attendance", uniqueConstraints = {
+        @UniqueConstraint(name = "uk_attendance_user_date", columnNames = { "UserID", "WorkDate" })
+})
 public class Attendance {
 
     @Id
@@ -41,9 +39,10 @@ public class Attendance {
     @Column(name = "AttendanceID")
     private Integer attendanceId;
 
+    // ====== MERGED PART (User relation) ======
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "UserID", nullable = false)
-    private User user;
+    private User user; // nếu project bạn dùng Users thì đổi lại Users
 
     @Column(name = "WorkDate", nullable = false)
     private LocalDate workDate;
@@ -54,6 +53,7 @@ public class Attendance {
     @Column(name = "CheckOut")
     private LocalDateTime checkOut;
 
+    // ====== MERGED STATUS ======
     @Enumerated(EnumType.STRING)
     @Column(name = "Status", nullable = false, length = 20, columnDefinition = "nvarchar(20)")
     private AttendanceStatus status;

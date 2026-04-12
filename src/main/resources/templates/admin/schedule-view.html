@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+    th:replace="~{fragments/Admin/admin :: layout(${viewTitle != null ? viewTitle : ''}, ~{::content}, ${sessionUser}, '/css/admin/schedule.css')}">
+
+<th:block th:fragment="content">
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <div class="schedule-shell">
+        <header class="hero-panel">
+            <div class="hero-copy">
+                <div class="eyebrow">
+                    <img th:src="@{/images/icons/icon1.svg}" alt="">
+                    Quản lý phân ca
+                </div>
+                <h1 class="page-title" th:text="${viewTitle != null ? viewTitle : 'Lịch phân ca'}">Lịch phân ca</h1>
+                <p class="page-subtitle">Xem và quản lý lịch phân ca của nhân viên theo ngày hoặc tuần.</p>
+            </div>
+            <div class="hero-actions">
+                <nav class="tab-nav">
+                    <a class="tab-link" th:href="@{/admin/schedule/assign}">
+                        <i class="fa-solid fa-calendar-check"></i> Phân ca
+                    </a>
+                </nav>
+            </div>
+        </header>
+
+        <!-- View Toggle -->
+        <div class="surface-card" th:if="${viewType == null || viewType == 'daily' || viewType == 'weekly'}">
+            <div class="view-toggle">
+                <a th:classappend="${viewType == 'daily' ? 'is-active' : ''}" class="view-btn"
+                    th:href="@{/admin/schedule/daily(date=${targetDate})}">
+                    <i class="fas fa-calendar-day"></i>
+                    Theo ngày
+                </a>
+
+                <a th:classappend="${viewType == 'weekly' ? 'is-active' : ''}" class="view-btn"
+                    th:href="@{/admin/schedule/weekly(date=${targetDate})}">
+                    <i class="fas fa-calendar-week"></i>
+                    Theo tuần
+                </a>
+            </div>
+
+            <!-- Date Navigation -->
+            <div class="date-nav" th:if="${viewType == 'daily' || viewType == 'weekly'}">
+                <a class="date-nav-btn" th:if="${viewType == 'daily'}"
+                    th:href="@{/admin/schedule/daily(date=${targetDate.minusDays(1)})}">← Trước</a>
+                <a class="date-nav-btn" th:if="${viewType == 'weekly'}"
+                    th:href="@{/admin/schedule/weekly(date=${targetDate.minusDays(7)})}">← Trước</a>
+                <span class="current-date" th:if="${viewType == 'daily'}"
+                    th:text="${#temporals.format(targetDate, 'EEEE, dd/MM/yyyy')}">Thứ Hai, 01/01/2024</span>
+                <span class="current-date" th:if="${viewType == 'weekly'}"
+                    th:text="${#temporals.format(weekStart, 'dd/MM/yyyy') + ' - ' + #temporals.format(weekEnd, 'dd/MM/yyyy')}">01/01
+                    - 07/01/2024</span>
+                <a class="date-nav-btn" th:if="${viewType == 'daily'}"
+                    th:href="@{/admin/schedule/daily(date=${targetDate.plusDays(1)})}">Sau →</a>
+                <a class="date-nav-btn" th:if="${viewType == 'weekly'}"
+                    th:href="@{/admin/schedule/weekly(date=${targetDate.plusDays(7)})}">Sau →</a>
+                <a class="date-nav-btn" th:if="${viewType == 'daily'}" th:href="@{/admin/schedule/daily}">Hôm nay</a>
+                <a class="date-nav-btn" th:if="${viewType == 'weekly'}" th:href="@{/admin/schedule/weekly}">Hôm nay</a>
+            </div>
+
+            <!-- Daily View -->
+            <div th:if="${viewType == 'daily'}" class="daily-view">
+                <h2 class="section-title">Lịch phân ca ngày <span
+                        th:text="${#temporals.format(targetDate, 'dd/MM/yyyy')}"></span></h2>
+                <p class="section-subtitle" th:text="${schedules.size()} + ' nhân viên được phân ca'">0 nhân viên được
+                    phân ca</p>
+
+                <table class="daily-table" th:if="${not #lists.isEmpty(schedules)}">
+                    <thead>
+                        <tr>
+                            <th>Nhân viên</th>
+                            <th>Email</th>
+                            <th>Ca làm</th>
+                            <th>Giờ</th>
+                            <th>Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="schedule : ${schedules}">
+                            <td>
+                                <strong th:text="${schedule.user.fullName}">Tên nhân viên</strong>
+                            </td>
+                            <td th:text="${schedule.user.email}">email@example.com</td>
+                            <td>
+                                <span class="shift-badge" th:text="${schedule.shift.shiftName}">Ca sáng</span>
+                            </td>
+                            <td th:text="${schedule.shift.startTime + ' - ' + schedule.shift.endTime}">06:00 - 14:00
+                            </td>
+                            <td>
+                                <a class="action-btn" th:href="@{/admin/schedule/{id}/edit(id=${schedule.scheduleId})}">Sửa</a>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div th:if="${#lists.isEmpty(schedules)}" class="empty-state">
+                    <p>Không có nhân viên nào được phân ca trong ngày này.</p>
+                    <br>
+                    <a class="view-btn is-active" th:href="@{/admin/schedule/assign}">Phân ca ngay</a>
+                </div>
+            </div>
+
+            <!-- Weekly View -->
+            <div th:if="${viewType == 'weekly'}" class="weekly-view">
+                <h2 class="section-title">Lịch phân ca tuần <span
+                        th:text="${#temporals.format(weekStart, 'dd/MM/yyyy') + ' - ' + #temporals.format(weekEnd, 'dd/MM/yyyy')}"></span>
+                </h2>
+                <p class="section-subtitle" th:text="${schedules.size()} + ' bản ghi phân ca'">0 bản ghi phân ca</p>
+
+                <div class="week-grid">
+                    <div th:each="day : ${weekDays}" class="week-day-card">
+                        <div class="week-day-header" th:classappend="${day == today} ? 'is-today'">
+                            <div class="week-day-name" th:text="${#temporals.dayOfWeekName(day)}">Thứ Hai</div>
+                            <div class="week-day-date" th:text="${#temporals.format(day, 'dd/MM')}">01/01</div>
+                        </div>
+                        <div class="week-day-body">
+                            <th:block
+                                th:with="daySchedules=${schedulesByDate != null ? schedulesByDate.get(day) : null}">
+                                <th:block th:if="${daySchedules != null and not #lists.isEmpty(daySchedules)}">
+                                    <div th:each="schedule : ${daySchedules}" class="shift-item"
+                                        th:classappend="${schedule.shift.shiftName.toLowerCase().contains('sáng') ? 'shift-item--morning' : (schedule.shift.shiftName.toLowerCase().contains('chiều') ? 'shift-item--afternoon' : 'shift-item--evening')}">
+                                        <div class="shift-employee" th:text="${schedule.user.fullName}">Nhân viên</div>
+                                        <div class="shift-time"
+                                            th:text="${schedule.shift.shiftName + ' | ' + schedule.shift.startTime + ' - ' + schedule.shift.endTime}">
+                                            Ca sáng | 06:00 - 14:00</div>
+                                    </div>
+                                </th:block>
+                                <div th:if="${daySchedules == null or #lists.isEmpty(daySchedules)}" class="no-shift">
+                                    Không có ca
+                                </div>
+                            </th:block>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Employee Individual View -->
+        <div th:if="${viewType == 'employee'}" class="surface-card">
+            <div class="employee-header">
+                <div class="employee-avatar" th:text="${#strings.substring(employee.fullName, 0, 1)}">N</div>
+                <div class="employee-info">
+                    <h2 th:text="${employee.fullName}">Tên nhân viên</h2>
+                    <p th:text="${employee.email}">email@example.com</p>
+                    <p th:text="${employee.role}">Role</p>
+                </div>
+            </div>
+
+            <h2 class="section-title">Lịch làm việc của <span th:text="${employee.fullName}">Nhân viên</span></h2>
+            <p class="section-subtitle" th:text="${schedules.size()} + ' ngày được phân công'">0 ngày được phân công</p>
+
+            <table class="employee-schedule-table" th:if="${not #lists.isEmpty(schedules)}">
+                <thead>
+                    <tr>
+                        <th>Ngày</th>
+                        <th>Ca làm</th>
+                        <th>Giờ bắt đầu</th>
+                        <th>Giờ kết thúc</th>
+                        <th>Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="schedule : ${schedules}">
+                        <td th:text="${#temporals.format(schedule.workDate, 'EEEE, dd/MM/yyyy')}">Thứ Hai, 01/01/2024
+                        </td>
+                        <td>
+                            <span class="shift-badge" th:text="${schedule.shift.shiftName}">Ca sáng</span>
+                        </td>
+                        <td th:text="${schedule.shift.startTime}">06:00</td>
+                        <td th:text="${schedule.shift.endTime}">14:00</td>
+                        <td>
+                            <a class="action-btn" th:href="@{/admin/schedule/{id}/edit(id=${schedule.scheduleId})}">Sửa</a>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div th:if="${#lists.isEmpty(schedules)}" class="empty-state">
+                <p>Nhân viên này chưa có lịch phân ca nào.</p>
+            </div>
+        </div>
+
+    </div>
+</th:block>
+
+</html>

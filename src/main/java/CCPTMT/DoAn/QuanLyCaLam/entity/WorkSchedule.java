@@ -27,7 +27,7 @@ import lombok.Setter;
 @Table(
     name = "work_schedules",
     uniqueConstraints = {
-        @UniqueConstraint(name = "uk_work_schedule_user_date", columnNames = {"UserID", "WorkDate"})
+        @UniqueConstraint(name = "uk_work_schedule_user_date_shift", columnNames = {"UserID", "WorkDate", "ShiftID"})
     }
 )
 public class WorkSchedule {

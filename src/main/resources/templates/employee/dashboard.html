@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+    th:replace="~{fragments/employee/employee :: layout(${pageTitle}, ~{::content}, ${sessionUser})}">
+
+<th:block th:fragment="content">
+    <style>
+        .dashboard-shell {
+            display: grid;
+            gap: 24px;
+        }
+
+        .dashboard-summary {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+        }
+
+        .dashboard-card {
+            background: #ffffff;
+            border-radius: 18px;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 18px 36px rgba(15, 23, 42, 0.06);
+            padding: 28px;
+        }
+
+        .dashboard-card h2 {
+            margin: 0 0 10px;
+            font-size: 1.5rem;
+            color: #0f172a;
+        }
+
+        .dashboard-card p {
+            margin: 0;
+            color: #475569;
+            line-height: 1.75;
+        }
+
+        .dashboard-stats {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 20px;
+        }
+
+        .stat-card {
+            background: #ffffff;
+            border-radius: 18px;
+            border: 1px solid #e2e8f0;
+            padding: 24px;
+            box-shadow: 0 10px 26px rgba(15, 23, 42, 0.05);
+        }
+
+        .stat-card strong {
+            display: block;
+            font-size: 2rem;
+            color: #111827;
+            margin-bottom: 10px;
+        }
+
+        .stat-card span {
+            color: #64748b;
+            font-size: 0.95rem;
+        }
+
+        .schedule-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        .schedule-table th,
+        .schedule-table td {
+            padding: 18px 16px;
+            text-align: left;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .schedule-table th {
+            background: #f8fafc;
+            color: #475569;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+        }
+
+        .schedule-table tbody tr:hover {
+            background: #f8fafc;
+        }
+
+        .status-pill {
+            display: inline-flex;
+            padding: 8px 14px;
+            border-radius: 999px;
+            font-weight: 700;
+            font-size: 0.9rem;
+            color: #ffffff;
+        }
+
+        .status-pill.active {
+            background: #10b981;
+        }
+
+        .status-pill.pending {
+            background: #2563eb;
+        }
+
+        .status-pill.none {
+            background: #64748b;
+        }
+
+        @media (max-width: 1000px) {
+            .dashboard-summary {
+                grid-template-columns: 1fr;
+            }
+
+            .dashboard-stats {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        @media (max-width: 720px) {
+            .dashboard-stats {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+
+    <div class="dashboard-shell">
+        <div class="dashboard-card">
+            <h2>Xin chào, <span th:text="${sessionUser.fullName}">Nhân viên</span></h2>
+            <p th:text="${pageDescription}">Theo dõi lịch làm, chấm công và gửi yêu cầu ngay tại đây.</p>
+        </div>
+
+        <div class="dashboard-summary">
+            <div class="dashboard-card">
+                <h2>Ca làm hôm nay</h2>
+                <p><strong th:text="${todayShiftLabel}">Chưa có ca</strong></p>
+                <p th:text="${todayShiftTime}">-</p>
+                <p th:if="${hasTodayShift}">
+                    Trạng thái: <span class="status-pill"
+                        th:classappend="${todayAttendanceClass}"
+                        th:text="${todayAttendanceStatus}">Chưa chấm công</span>
+                </p>
+            </div>
+            <div class="dashboard-card">
+                <h2>Lịch làm trong tháng</h2>
+                <p><strong th:text="${currentMonthLabel}">Tháng 4 - 2026</strong></p>
+                <p>Đã phân <strong th:text="${monthShiftCount}">0</strong> ca trong tháng.</p>
+                <p>Ca sắp tới: <strong th:text="${upcomingShiftCount}">0</strong></p>
+            </div>
+        </div>
+
+        <div class="dashboard-card" style="grid-column: 1 / -1;">
+            <div style="display:flex; justify-content:space-between; align-items:center; gap:16px; flex-wrap:wrap;">
+                <div>
+                    <h2>Lịch ca tháng</h2>
+                    <p>Danh sách ca được phân cho tháng này.</p>
+                </div>
+            </div>
+            <table class="schedule-table">
+                <thead>
+                    <tr>
+                        <th>Ngày</th>
+                        <th>Ca</th>
+                        <th>Giờ</th>
+                    </tr>
+                </thead>
+                <tbody th:if="${monthlyShifts != null and !monthlyShifts.isEmpty()}">
+                    <tr th:each="shift : ${monthlyShifts}">
+                        <td th:text="${#temporals.format(shift.workDate, 'EEEE, dd/MM')}">Thứ Năm, 10/04</td>
+                        <td th:text="${shift.shiftName}">Ca sáng</td>
+                        <td th:text="${#temporals.format(shift.startTime, 'HH:mm') + ' - ' + #temporals.format(shift.endTime, 'HH:mm')}">08:00 - 17:00</td>
+                    </tr>
+                </tbody>
+                <tbody th:if="${monthlyShifts == null or monthlyShifts.isEmpty()}">
+                    <tr>
+                        <td colspan="3" style="padding: 22px; text-align: center; color: #64748b;">Chưa có ca được phân trong tháng.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</th:block>
+
+</html>

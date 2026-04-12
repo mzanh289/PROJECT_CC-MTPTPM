@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org" th:fragment="layout(pageTitle, content, sessionUser)">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${pageTitle}">Employee</title>
+    <link rel="stylesheet" th:href="@{/css/shared/layout.css}">
+</head>
+
+<body>
+    <div class="role-shell">
+        <aside class="role-sidebar role-sidebar-employee">
+            <div class="role-sidebar-header">
+                <h2>Employee</h2>
+                <form th:action="@{/logout}" method="post" class="logout-form">
+                    <button type="submit" class="logout-link">Đăng xuất</button>
+                </form>
+            </div>
+            <nav class="role-nav">
+                <a th:href="@{/employee/dashboard}">Dashboard</a>
+                <a th:href="@{/employee/shifts}">Shift</a>
+                <a th:href="@{/employee/attendance}">Check in - checkout</a>
+                <a th:href="@{/employee/attendance/history}">Lịch sử chấm công</a>
+                <a th:href="@{/requests/my}">Request</a>
+            </nav>
+        </aside>
+
+        <main class="role-main">
+            <header class="role-header">
+                <h1 th:text="${pageTitle}">Employee Dashboard</h1>
+            </header>
+            <section class="role-content" th:replace="${content}"></section>
+        </main>
+    </div>
+</body>
+
+</html>
