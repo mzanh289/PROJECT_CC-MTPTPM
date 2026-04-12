@@ -99,7 +99,7 @@ public class RequestController {
     /**
      * Hiển thị danh sách yêu cầu của nhân viên hiện tại
      */
-    @GetMapping("/employee/requests")
+    @GetMapping("/requests/my")
     public String myRequests(HttpSession session, Model model) {
         SessionUserDto sessionUser = (SessionUserDto) session.getAttribute(LoginController.SESSION_USER_KEY);
         if (sessionUser == null) {
