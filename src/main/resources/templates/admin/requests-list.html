@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+    th:replace="~{fragments/Admin/admin :: layout(${pageTitle}, ~{::content}, ${sessionUser}, null)}">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${pageTitle}">Quản lý yêu cầu</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        .page-wrapper {
+            width: 100%;
+            background-color: #f4f7f6;
+            min-height: 100vh;
+        }
+
+        .page-container {
+            padding: 30px 40px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        /* Header Section */
+        .page-header {
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .page-header-content h1 {
+            font-size: 28px;
+            font-weight: 700;
+            color: #2c3e50;
+            margin: 0 0 5px 0;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .page-header-content p {
+            color: #7f8c8d;
+            font-size: 15px;
+            margin: 0;
+        }
+
+        /* Stats Cards */
+        .stats-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            border-left: 4px solid #3498db;
+        }
+
+        .stat-card.pending { border-left-color: #f1c40f; }
+        .stat-card.approved { border-left-color: #2ecc71; }
+        .stat-card.rejected { border-left-color: #e74c3c; }
+
+        .stat-label { color: #7f8c8d; font-size: 13px; font-weight: 600; text-transform: uppercase; }
+        .stat-value { color: #2c3e50; font-size: 24px; font-weight: 700; }
+
+        /* Search & Filter Bar */
+        .toolbar {
+            background: white;
+            padding: 20px;
+            border-radius: 12px 12px 0 0;
+            border-bottom: 1px solid #edf2f7;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .search-box {
+            position: relative;
+            flex: 1;
+            max-width: 400px;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 10px 15px 10px 40px;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .search-box input:focus {
+            outline: none;
+            border-color: #3498db;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+        }
+
+        .search-box i {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #a0aec0;
+        }
+
+        /* Table Styling */
+        .table-container {
+            background: white;
+            border-radius: 0 0 12px 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            overflow: hidden;
+        }
+
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .table thead th {
+            background-color: #f8fafc;
+            padding: 15px 20px;
+            text-align: left;
+            font-size: 12px;
+            font-weight: 700;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            border-bottom: 1px solid #edf2f7;
+        }
+
+        .table tbody td {
+            padding: 18px 20px;
+            border-bottom: 1px solid #edf2f7;
+            color: #334155;
+            font-size: 14px;
+            vertical-align: middle;
+        }
+
+        .table tbody tr:hover {
+            background-color: #f1f5f9;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .user-avatar {
+            width: 32px;
+            height: 32px;
+            background: #e2e8f0;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            color: #475569;
+            font-size: 12px;
+        }
+
+        /* Status & Type Badges */
+        .badge {
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .badge-pending { background: #fef3c7; color: #92400e; }
+        .badge-approved { background: #dcfce7; color: #166534; }
+        .badge-rejected { background: #fee2e2; color: #991b1b; }
+
+        .type-tag {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .type-leave { background: #e0f2fe; color: #0369a1; }
+        .type-shift { background: #f5f3ff; color: #6d28d9; }
+
+        /* Action Buttons */
+        .action-group {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn-action {
+            width: 32px;
+            height: 32px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: white;
+        }
+
+        .btn-approve { background: #10b981; }
+        .btn-approve:hover { background: #059669; transform: scale(1.1); }
+
+        .btn-reject { background: #ef4444; }
+        .btn-reject:hover { background: #dc2626; transform: scale(1.1); }
+
+        .processed-text {
+            font-size: 12px;
+            color: #94a3b8;
+            font-style: italic;
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .page-container { padding: 20px; }
+            .table-container { overflow-x: auto; }
+        }
+    </style>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+
+<th:block th:fragment="content">
+    <style>
+        :root {
+            --admin-primary: #0f172a;
+            --admin-secondary: #f8fafc;
+            --status-pending: #f59e0b;
+            --status-approved: #10b981;
+            --status-rejected: #ef4444;
+            --border-color: #e2e8f0;
+        }
+
+        .page-wrapper {
+            background-color: var(--admin-secondary);
+            min-height: 100vh;
+            padding: 30px;
+        }
+
+        /* Stats Section */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 24px;
+            margin-bottom: 32px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 24px;
+            border-radius: 16px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            border: 1px solid var(--border-color);
+            transition: transform 0.2s ease;
+        }
+
+        .stat-card:hover { transform: translateY(-2px); }
+
+        .stat-icon {
+            width: 56px;
+            height: 56px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+        }
+
+        .stat-info h3 {
+            font-size: 14px;
+            color: #64748b;
+            margin-bottom: 4px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .stat-info p {
+            font-size: 28px;
+            font-weight: 800;
+            color: #1e293b;
+            margin: 0;
+        }
+
+        .icon-total { background: #eff6ff; color: #2563eb; }
+        .icon-pending { background: #fffbeb; color: #d97706; }
+        .icon-approved { background: #f0fdf4; color: #166534; }
+        .icon-rejected { background: #fef2f2; color: #991b1b; }
+
+        /* Table Section */
+        .table-wrapper {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+            border: 1px solid var(--border-color);
+            overflow: hidden;
+        }
+
+        .table-header {
+            padding: 24px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #fff;
+        }
+
+        .table-header h2 {
+            font-size: 18px;
+            font-weight: 700;
+            color: #1e293b;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .table-filters {
+            display: flex;
+            gap: 12px;
+        }
+
+        .search-input {
+            padding: 10px 16px 10px 40px;
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            font-size: 14px;
+            width: 300px;
+            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="%2364748b" viewBox="0 0 16 16"><path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/></svg>') no-repeat 14px center;
+        }
+
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .table th {
+            background: #f8fafc;
+            padding: 16px 24px;
+            text-align: left;
+            font-size: 12px;
+            font-weight: 700;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .table td {
+            padding: 18px 24px;
+            border-bottom: 1px solid var(--border-color);
+            font-size: 14px;
+            color: #334155;
+            vertical-align: middle;
+        }
+
+        .table tr:last-child td { border-bottom: none; }
+        .table tr:hover { background-color: #f8fafc; }
+
+        /* Badges & Tags */
+        .user-cell {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .user-avatar {
+            width: 36px;
+            height: 36px;
+            background: #e2e8f0;
+            color: #475569;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 13px;
+        }
+
+        .badge {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .badge-pending { background: #fffbeb; color: #92400e; }
+        .badge-approved { background: #f0fdf4; color: #166534; }
+        .badge-rejected { background: #fef2f2; color: #991b1b; }
+
+        .type-tag {
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .type-leave { background: #eff6ff; color: #1d4ed8; }
+        .type-shift { background: #faf5ff; color: #7e22ce; }
+
+        /* Actions */
+        .actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn-icon {
+            width: 34px;
+            height: 34px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid var(--border-color);
+            background: white;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            color: #64748b;
+        }
+
+        .btn-approve:hover { background: #f0fdf4; border-color: #10b981; color: #10b981; }
+        .btn-reject:hover { background: #fef2f2; border-color: #ef4444; color: #ef4444; }
+
+        .alert-toast {
+            position: fixed;
+            top: 24px;
+            right: 24px;
+            padding: 16px 24px;
+            border-radius: 12px;
+            background: white;
+            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            z-index: 1000;
+            animation: slideInRight 0.3s ease;
+            border-left: 4px solid #10b981;
+        }
+
+        @keyframes slideInRight {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <div class="page-wrapper">
+        <!-- Stats Bar -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon icon-total"><i class="fas fa-list-ul"></i></div>
+                <div class="stat-info">
+                    <h3>Tổng yêu cầu</h3>
+                    <p th:text="${requests.size()}">0</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon icon-pending"><i class="fas fa-clock"></i></div>
+                <div class="stat-info">
+                    <h3>Chờ duyệt</h3>
+                    <p th:text="${requests.?[status.name() == 'PENDING'].size()}">0</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon icon-approved"><i class="fas fa-check-circle"></i></div>
+                <div class="stat-info">
+                    <h3>Đã duyệt</h3>
+                    <p th:text="${requests.?[status.name() == 'APPROVED'].size()}">0</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon icon-rejected"><i class="fas fa-times-circle"></i></div>
+                <div class="stat-info">
+                    <h3>Từ chối</h3>
+                    <p th:text="${requests.?[status.name() == 'REJECTED'].size()}">0</p>
+                </div>
+            </div>
+        </div>
+
+        <div th:if="${successMessage}" class="alert-toast">
+            <i class="fas fa-check-circle" style="color: #10b981;"></i>
+            <span th:text="${successMessage}"></span>
+        </div>
+
+        <!-- Main Table -->
+        <div class="table-wrapper">
+            <div class="table-header">
+                <h2><i class="fas fa-tasks"></i> Danh sách yêu cầu</h2>
+                <div class="table-filters">
+                    <input type="text" class="search-input" placeholder="Tìm kiếm nhân viên, lý do...">
+                </div>
+            </div>
+            
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Nhân viên</th>
+                        <th>Loại</th>
+                        <th>Nội dung / Thời gian</th>
+                        <th>Lý do</th>
+                        <th>Ngày gửi</th>
+                        <th>Trạng thái</th>
+                        <th>Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="request : ${requests}">
+                        <td>
+                            <div class="user-cell">
+                                <div class="user-avatar" th:text="${#strings.substring(request.user.fullName,0,1)}">N</div>
+                                <div>
+                                    <div style="font-weight: 600; color: #1e293b;" th:text="${request.user.fullName}"></div>
+                                    <div style="font-size: 12px; color: #64748b;" th:text="${request.user.email}"></div>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <span th:class="'type-tag ' + (${request.type.name() == 'LEAVE'} ? 'type-leave' : 'type-shift')"
+                                  th:text="${request.type.name() == 'LEAVE' ? 'Xin nghỉ' : 'Đổi ca'}"></span>
+                        </td>
+                        <td>
+                            <!-- Leave Request -->
+                            <div th:if="${request.type.name() == 'LEAVE'}">
+                                <div style="font-weight: 600;">
+                                    [[${#temporals.format(request.fromDate, 'dd/MM')}]] 
+                                    <i class="fas fa-arrow-right" style="font-size: 10px; color: #94a3b8;"></i> 
+                                    [[${#temporals.format(request.toDate, 'dd/MM/yyyy')}]]
+                                </div>
+                            </div>
+                            <!-- Shift Change Request -->
+                            <div th:if="${request.type.name() == 'SHIFT_CHANGE'}">
+                                <div style="font-weight: 600;" th:text="${#temporals.format(request.workDate, 'dd/MM/yyyy')}"></div>
+                                <div style="font-size: 12px; color: #64748b;">
+                                    [[${request.shift?.shiftName}]] <i class="fas fa-sync" style="font-size: 9px;"></i> [[${request.targetShift?.shiftName}]]
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <div th:title="${request.reason}" style="max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; cursor: help;">
+                                [[${request.reason}]]
+                            </div>
+                        </td>
+                        <td style="color: #64748b; font-size: 13px;">
+                            [[${#temporals.format(request.createdAt, 'dd/MM HH:mm')}]]
+                        </td>
+                        <td>
+                            <span th:class="'badge ' + ('badge-' + ${request.status.name().toLowerCase()})">
+                                <i th:class="${request.status.name() == 'PENDING' ? 'fas fa-clock' : 
+                                             request.status.name() == 'APPROVED' ? 'fas fa-check-circle' : 'fas fa-times-circle'}"></i>
+                                [[${request.status.name() == 'PENDING' ? 'Chờ duyệt' :
+                                   request.status.name() == 'APPROVED' ? 'Đã duyệt' : 'Từ chối'}]]
+                            </span>
+                        </td>
+                        <td>
+                            <div class="actions" th:if="${request.status.name() == 'PENDING'}">
+                                <form th:action="@{/admin/requests/{id}/approve(id=${request.requestId})}" method="post">
+                                    <button type="submit" class="btn-icon btn-approve" title="Duyệt yêu cầu">
+                                        <i class="fas fa-check"></i>
+                                    </button>
+                                </form>
+                                <form th:action="@{/admin/requests/{id}/reject(id=${request.requestId})}" method="post">
+                                    <button type="submit" class="btn-icon btn-reject" title="Từ chối">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr th:if="${requests.isEmpty()}">
+                        <td colspan="7" style="text-align: center; padding: 48px; color: #94a3b8;">
+                            <i class="fas fa-inbox" style="font-size: 32px; margin-bottom: 12px; display: block;"></i>
+                            Không có yêu cầu nào cần xử lý.
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        // Simple search functionality
+        document.querySelector('.search-input').addEventListener('keyup', function(e) {
+            const term = e.target.value.toLowerCase();
+            const rows = document.querySelectorAll('.table tbody tr:not(:last-child)');
+            
+            rows.forEach(row => {
+                const text = row.textContent.toLowerCase();
+                row.style.display = text.includes(term) ? '' : 'none';
+            });
+        });
+
+        // Auto-hide toast
+        const toast = document.querySelector('.alert-toast');
+        if (toast) {
+            setTimeout(() => {
+                toast.style.display = 'none';
+            }, 3000);
+        }
+    </script>
+</th:block>
+
+
+</html>
