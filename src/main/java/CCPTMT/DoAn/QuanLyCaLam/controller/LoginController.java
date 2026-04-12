@@ -75,6 +75,23 @@ public class LoginController {
                 : "redirect:/employee/dashboard";
     }
 
+    @GetMapping("/admin/dashboard")
+    public String adminDashboard(HttpSession session, Model model) {
+        SessionUserDto sessionUser = (SessionUserDto) session.getAttribute(SESSION_USER_KEY);
+        if (sessionUser == null) {
+            return "redirect:/login";
+        }
+
+        if (sessionUser.getRole() != Role.ADMIN) {
+            return "redirect:/employee/dashboard";
+        }
+
+        model.addAttribute("sessionUser", sessionUser);
+        model.addAttribute("pageTitle", "Admin Dashboard");
+        model.addAttribute("pageDescription", "Chọn chức năng ở sidebar để bắt đầu quản lý hệ thống.");
+        return "admin/dashboard";
+    }
+
     @GetMapping("/employee/dashboard")
     public String employeeDashboard(HttpSession session, Model model) {
         SessionUserDto sessionUser = (SessionUserDto) session.getAttribute(SESSION_USER_KEY);
