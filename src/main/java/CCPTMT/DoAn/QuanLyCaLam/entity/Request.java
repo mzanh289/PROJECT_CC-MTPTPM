@@ -1,6 +1,7 @@
 package CCPTMT.DoAn.QuanLyCaLam.entity;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 import CCPTMT.DoAn.QuanLyCaLam.entity.enums.RequestStatus;
 import CCPTMT.DoAn.QuanLyCaLam.entity.enums.RequestType;
@@ -43,10 +44,10 @@ public class Request {
     @Column(name = "Type", nullable = false, length = 20, columnDefinition = "nvarchar(20)")
     private RequestType type;
 
-    @Column(name = "FromDate", nullable = false)
+    @Column(name = "FromDate")
     private LocalDate fromDate;
 
-    @Column(name = "ToDate", nullable = false)
+    @Column(name = "ToDate")
     private LocalDate toDate;
 
     @Column(name = "Reason", nullable = false, columnDefinition = "nvarchar(500)")
@@ -55,4 +56,19 @@ public class Request {
     @Enumerated(EnumType.STRING)
     @Column(name = "Status", nullable = false, length = 20)
     private RequestStatus status;
+
+    @Column(name = "CreatedAt", nullable = false)
+    private LocalDateTime createdAt;
+
+    // Fields for SHIFT_CHANGE request type
+    @Column(name = "WorkDate")
+    private LocalDate workDate;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "ShiftID")
+    private Shift shift;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "TargetShiftID")
+    private Shift targetShift;
 }

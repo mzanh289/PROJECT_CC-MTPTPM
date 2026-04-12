@@ -7,11 +7,13 @@ import CCPTMT.DoAn.QuanLyCaLam.repository.ShiftRepository;
 import CCPTMT.DoAn.QuanLyCaLam.repository.UserRepository;
 import CCPTMT.DoAn.QuanLyCaLam.repository.WorkScheduleRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.DayOfWeek;
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.time.temporal.TemporalAdjusters;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -56,27 +58,50 @@ public class WorkScheduleService {
 
     @Transactional
     public WorkSchedule assignShift(Integer userId, Integer shiftId, LocalDate workDate) {
-        Optional<User> userOpt = userRepository.findById(userId);
-        Optional<Shift> shiftOpt = shiftRepository.findById(shiftId);
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy nhân viên"));
+        Shift shift = shiftRepository.findById(shiftId)
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy ca làm"));
 
-        if (userOpt.isEmpty() || shiftOpt.isEmpty()) {
-            throw new IllegalArgumentException("User or Shift not found");
+        // Kiểm tra trùng ca: cùng nhân viên + cùng ngày + cùng ca
+        if (workScheduleRepository.existsByUserUserIdAndWorkDateAndShiftShiftId(userId, workDate, shiftId)) {
+            throw new IllegalArgumentException(
+                "Nhân viên đã được phân ca '" + shift.getShiftName() + "' vào ngày này rồi.");
         }
 
-        Optional<WorkSchedule> existingSchedule = workScheduleRepository
+        // Kiểm tra trùng giờ: ca mới có bị chồng giờ với ca hiện tại không
+        List<WorkSchedule> existingOnDay = workScheduleRepository
                 .findByUserUserIdAndWorkDate(userId, workDate);
 
-        if (existingSchedule.isPresent()) {
-            WorkSchedule schedule = existingSchedule.get();
-            schedule.setShift(shiftOpt.get());
+        LocalTime newStart = shift.getStartTime();
+        LocalTime newEnd   = shift.getEndTime();
+
+        for (WorkSchedule existing : existingOnDay) {
+            LocalTime exStart = existing.getShift().getStartTime();
+            LocalTime exEnd   = existing.getShift().getEndTime();
+
+            // Chồng giờ nếu: newStart < exEnd && newEnd > exStart
+            boolean overlaps = newStart.isBefore(exEnd) && newEnd.isAfter(exStart);
+            if (overlaps) {
+                throw new IllegalArgumentException(
+                    "Ca '" + shift.getShiftName() + "' (" + newStart + "-" + newEnd + ")" +
+                    " bị trùng giờ với ca '" + existing.getShift().getShiftName() +
+                    "' (" + exStart + "-" + exEnd + ").");
+            }
+        }
+
+        WorkSchedule schedule = WorkSchedule.builder()
+                .user(user)
+                .shift(shift)
+                .workDate(workDate)
+                .build();
+        try {
             return workScheduleRepository.save(schedule);
-        } else {
-            WorkSchedule schedule = WorkSchedule.builder()
-                    .user(userOpt.get())
-                    .shift(shiftOpt.get())
-                    .workDate(workDate)
-                    .build();
-            return workScheduleRepository.save(schedule);
+        } catch (DataIntegrityViolationException e) {
+            // Fallback nếu DB constraint cũ vẫn tồn tại hoặc race condition
+            throw new IllegalArgumentException(
+                "Nhân viên đã được phân ca '" + shift.getShiftName() +
+                "' vào ngày " + workDate + " rồi.");
         }
     }
 
@@ -87,8 +112,8 @@ public class WorkScheduleService {
 
     @Transactional
     public void deleteScheduleByUserAndDate(Integer userId, LocalDate workDate) {
-        Optional<WorkSchedule> schedule = workScheduleRepository.findByUserUserIdAndWorkDate(userId, workDate);
-        schedule.ifPresent(workScheduleRepository::delete);
+        List<WorkSchedule> schedules = workScheduleRepository.findByUserUserIdAndWorkDate(userId, workDate);
+        workScheduleRepository.deleteAll(schedules);
     }
 
     public List<User> getAllEmployees() {

@@ -244,6 +244,9 @@
         }
     </style>
 </head>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+    th:replace="~{fragments/Admin/admin :: layout('Phân ca cho nhân viên', ~{::content}, ${sessionUser}, '/css/admin/assign.css')}">
+
 
 <body class="jsp-body">
     <div class="schedule-shell">
@@ -281,14 +284,12 @@
 
                     <div style="display: flex; justify-content: space-between; align-items: center;">
                         <label class="field-label" for="shiftId">Ca làm</label>
-                        <button type="button" class="button-small" onclick="toggleQuickCreate()">
-                            <img th:src="@{/images/icons/icon10.svg}" class="icon-inline" alt="">Tạo ca nhanh
-                        </button>
                     </div>
                     <select id="shiftId" name="shiftId" required>
                         <option value="">-- Chọn ca --</option>
                         <option th:each="shift : ${shifts}" th:value="${shift.shiftId}"
-                            th:text="${shift.shiftName} + ' (' + ${shift.startTime} + ' - ' + ${shift.endTime} + ')'"></option>
+                            th:text="${shift.shiftName} + ' (' + ${shift.startTime} + ' - ' + ${shift.endTime} + ')'">
+                        </option>
                     </select>
                 </div>
 
@@ -326,35 +327,13 @@
                     <a class="button-ghost" th:href="@{/admin/schedule/daily}">Hủy</a>
                 </div>
             </form>
-
-            <div class="nav-links">
-                <a class="nav-link" th:href="@{/admin/schedule/daily}">
-                    <img th:src="@{/images/icons/icon1.svg}" class="icon-inline" alt="">Xem lịch theo ngày
-                </a>
-                <a class="nav-link" th:href="@{/admin/schedule/weekly}">
-                    <img th:src="@{/images/icons/icon2.svg}" class="icon-inline" alt="">Xem lịch theo tuần
-                </a>
-                <a class="nav-link" th:href="@{/admin/shifts}">
-                    <img th:src="@{/images/icons/icon10.svg}" class="icon-inline" alt="">Quản lý ca làm
-                </a>
-            </div>
         </section>
     </div>
 
-    <script>
-        function toggleQuickCreate() {
-            var section = document.getElementById('quickCreateSection');
-            section.style.display = section.style.display === 'none' ? 'block' : 'none';
-        }
-
-        function createShiftQuick() {
-            var shiftName = document.getElementById('newShiftName').value;
-            var startTime = document.getElementById('newStartTime').value;
-            var endTime = document.getElementById('newEndTime').value;
-
-            if (!shiftName || !startTime || !endTime) {
-                alert('Vui lòng điền đầy đủ thông tin ca làm!');
-                return;
+        <script>
+            function toggleQuickCreate() {
+                var section = document.getElementById('quickCreateSection');
+                section.style.display = section.style.display === 'none' ? 'block' : 'none';
             }
 
             var form = document.createElement('form');
@@ -383,3 +362,37 @@
 
 </html>
 </html>
+            function createShiftQuick() {
+                var shiftName = document.getElementById('newShiftName').value;
+                var startTime = document.getElementById('newStartTime').value;
+                var endTime = document.getElementById('newEndTime').value;
+
+                if (!shiftName || !startTime || !endTime) {
+                    alert('Vui lòng điền đầy đủ thông tin ca làm!');
+                    return;
+                }
+
+                var form = document.createElement('form');
+                form.method = 'POST';
+                form.action = '/admin/shifts/save';
+
+                var fields = [
+                    { name: 'shiftName', value: shiftName },
+                    { name: 'startTime', value: startTime },
+                    { name: 'endTime', value: endTime }
+                ];
+
+                fields.forEach(function (field) {
+                    var input = document.createElement('input');
+                    input.type = 'hidden';
+                    input.name = field.name;
+                    input.value = field.value;
+                    form.appendChild(input);
+                });
+
+                document.body.appendChild(form);
+                form.submit();
+            }
+        </script>
+    </div>
+</th:block>
