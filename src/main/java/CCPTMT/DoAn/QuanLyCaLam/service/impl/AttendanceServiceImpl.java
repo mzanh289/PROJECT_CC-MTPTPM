@@ -22,8 +22,6 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class AttendanceServiceImpl implements AttendanceService {
 
-    private static final LocalTime LATE_THRESHOLD = LocalTime.of(9, 0);
-
     private final AttendanceRepository attendanceRepository;
     private final UserRepository userRepository;
     private final WorkScheduleRepository workScheduleRepository;
@@ -36,6 +34,11 @@ public class AttendanceServiceImpl implements AttendanceService {
     @Override
     public boolean hasAssignedShiftToday(Integer userId) {
         return workScheduleRepository.findByUserUserIdAndWorkDate(userId, LocalDate.now()).isPresent();
+    }
+
+    @Override
+    public WorkSchedule getTodaySchedule(Integer userId) {
+        return workScheduleRepository.findByUserUserIdAndWorkDate(userId, LocalDate.now()).orElse(null);
     }
 
     @Override
@@ -53,7 +56,7 @@ public class AttendanceServiceImpl implements AttendanceService {
         LocalDate today = LocalDate.now();
         LocalDateTime now = LocalDateTime.now();
 
-        requireAssignedShift(userId, today);
+        WorkSchedule schedule = requireAssignedShift(userId, today);
 
         Attendance attendance = attendanceRepository.findByUserUserIdAndWorkDate(userId, today)
                 .orElseGet(() -> createAttendanceForToday(userId, today));
@@ -63,7 +66,7 @@ public class AttendanceServiceImpl implements AttendanceService {
         }
 
         attendance.setCheckIn(now);
-        attendance.setStatus(now.toLocalTime().isAfter(LATE_THRESHOLD) ? AttendanceStatus.TRE : AttendanceStatus.DI_LAM);
+        attendance.setStatus(determineStatus(now.toLocalTime(), schedule.getShift().getStartTime()));
         return attendanceRepository.save(attendance);
     }
 
@@ -73,7 +76,7 @@ public class AttendanceServiceImpl implements AttendanceService {
         LocalDate today = LocalDate.now();
         LocalDateTime now = LocalDateTime.now();
 
-        requireAssignedShift(userId, today);
+        WorkSchedule schedule = requireAssignedShift(userId, today);
 
         Attendance attendance = attendanceRepository.findByUserUserIdAndWorkDate(userId, today)
                 .orElseGet(() -> createAttendanceForToday(userId, today));
@@ -84,11 +87,18 @@ public class AttendanceServiceImpl implements AttendanceService {
 
         if (attendance.getCheckIn() == null) {
             attendance.setCheckIn(now);
-            attendance.setStatus(AttendanceStatus.DI_LAM);
+            attendance.setStatus(determineStatus(now.toLocalTime(), schedule.getShift().getStartTime()));
         }
 
         attendance.setCheckOut(now);
         return attendanceRepository.save(attendance);
+    }
+
+    private AttendanceStatus determineStatus(LocalTime checkInTime, LocalTime shiftStart) {
+        if (checkInTime.isAfter(shiftStart)) {
+            return AttendanceStatus.TRE;
+        }
+        return AttendanceStatus.DI_LAM;
     }
 
     private WorkSchedule requireAssignedShift(Integer userId, LocalDate today) {

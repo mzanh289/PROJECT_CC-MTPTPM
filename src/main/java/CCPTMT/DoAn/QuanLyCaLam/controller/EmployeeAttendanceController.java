@@ -9,6 +9,8 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import CCPTMT.DoAn.QuanLyCaLam.dto.SessionUserDto;
 import CCPTMT.DoAn.QuanLyCaLam.entity.Attendance;
+import CCPTMT.DoAn.QuanLyCaLam.entity.WorkSchedule;
+import CCPTMT.DoAn.QuanLyCaLam.entity.enums.AttendanceStatus;
 import CCPTMT.DoAn.QuanLyCaLam.entity.enums.Role;
 import CCPTMT.DoAn.QuanLyCaLam.service.AttendanceService;
 import jakarta.servlet.http.HttpSession;
@@ -32,7 +34,15 @@ public class EmployeeAttendanceController {
         }
 
         Attendance todayAttendance = attendanceService.getTodayAttendance(sessionUser.getUserId());
-        boolean hasAssignedShift = attendanceService.hasAssignedShiftToday(sessionUser.getUserId());
+        WorkSchedule todaySchedule = attendanceService.getTodaySchedule(sessionUser.getUserId());
+        boolean hasAssignedShift = todaySchedule != null;
+
+        if (todayAttendance != null && todayAttendance.getStatus() == null && todayAttendance.getCheckIn() != null && todaySchedule != null) {
+            todayAttendance.setStatus(determineStatus(todayAttendance.getCheckIn().toLocalTime(), todaySchedule.getShift().getStartTime()));
+        }
+
+        boolean isEarlyCheckout = todayAttendance != null && todaySchedule != null && todayAttendance.getCheckOut() != null
+                && todayAttendance.getCheckOut().toLocalTime().isBefore(todaySchedule.getShift().getEndTime());
 
         boolean canCheckIn = hasAssignedShift && (todayAttendance == null || todayAttendance.getCheckIn() == null);
         boolean canCheckOut = hasAssignedShift && todayAttendance != null && todayAttendance.getCheckIn() != null
@@ -41,11 +51,20 @@ public class EmployeeAttendanceController {
         model.addAttribute("sessionUser", sessionUser);
         model.addAttribute("pageTitle", "Chấm công");
         model.addAttribute("todayAttendance", todayAttendance);
+        model.addAttribute("todaySchedule", todaySchedule);
         model.addAttribute("hasAssignedShift", hasAssignedShift);
+        model.addAttribute("isEarlyCheckout", isEarlyCheckout);
         model.addAttribute("canCheckIn", canCheckIn);
         model.addAttribute("canCheckOut", canCheckOut);
 
         return "employee/attendance";
+    }
+
+    private AttendanceStatus determineStatus(java.time.LocalTime checkInTime, java.time.LocalTime shiftStart) {
+        if (checkInTime.isAfter(shiftStart)) {
+            return AttendanceStatus.TRE;
+        }
+        return AttendanceStatus.DI_LAM;
     }
 
     @PostMapping("/checkin")

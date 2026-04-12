@@ -148,15 +148,28 @@
                         <div class="status-label">Ngày</div>
                         <div class="status-value" th:text="${#temporals.format(T(java.time.LocalDate).now(), 'EEEE, dd/MM/yyyy')}">Thứ Năm, 10/04/2026</div>
                     </div>
-                    <div class="status-card" th:if="${todayAttendance != null}">
+                    <div class="status-card" th:if="${hasAssignedShift}">
                         <div class="status-label">Tình trạng chấm công</div>
                         <div class="status-value">
-                            <span th:switch="${todayAttendance.status}">
+                            <span th:if="${todayAttendance == null or todayAttendance.checkIn == null}">Chưa chấm công</span>
+                            <span th:if="${todayAttendance != null and todayAttendance.checkIn != null}" th:switch="${todayAttendance.status.name()}">
                                 <span th:case="'DI_LAM'">Đi làm</span>
                                 <span th:case="'TRE'">Trễ</span>
                                 <span th:case="'NGHI'">Nghỉ</span>
-                                <span th:case="*">Không xác định</span>
+                                <span th:case="*">Chưa rõ</span>
                             </span>
+                        </div>
+                    </div>
+                    <div class="status-card" th:if="${todaySchedule != null}">
+                        <div class="status-label">Ca</div>
+                        <div class="status-value" th:text="${todaySchedule.shift.shiftName}">Ca sáng</div>
+                    </div>
+                    <div class="status-card" th:if="${todaySchedule != null}">
+                        <div class="status-label">Giờ ca</div>
+                        <div class="status-value">
+                            <span th:text="${#temporals.format(todaySchedule.shift.startTime, 'HH:mm')}">08:00</span>
+                            &nbsp;-&nbsp;
+                            <span th:text="${#temporals.format(todaySchedule.shift.endTime, 'HH:mm')}">17:00</span>
                         </div>
                     </div>
                 </div>
@@ -175,6 +188,7 @@
                     <p th:if="${hasAssignedShift and todayAttendance == null}">Bạn có thể check-in khi ca bắt đầu.</p>
                     <p th:if="${todayAttendance != null and todayAttendance.checkIn != null}">Check-in lúc <strong th:text="${#temporals.format(todayAttendance.checkIn, 'HH:mm')}"></strong>.</p>
                     <p th:if="${todayAttendance != null and todayAttendance.checkOut != null}">Check-out lúc <strong th:text="${#temporals.format(todayAttendance.checkOut, 'HH:mm')}"></strong>.</p>
+                    <p th:if="${isEarlyCheckout}">Bạn đã out sớm so với giờ kết thúc ca.</p>
                 </div>
 
                 <div class="message-box" th:if="${success != null}">
