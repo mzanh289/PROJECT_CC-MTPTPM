@@ -60,6 +60,23 @@ public class EmployeeAttendanceController {
         return "employee/attendance";
     }
 
+    @GetMapping("/history")
+    public String attendanceHistory(HttpSession session, Model model) {
+        SessionUserDto sessionUser = (SessionUserDto) session.getAttribute(LoginController.SESSION_USER_KEY);
+        if (sessionUser == null) {
+            return "redirect:/login";
+        }
+        if (sessionUser.getRole() == Role.ADMIN) {
+            return "redirect:/admin/dashboard";
+        }
+
+        model.addAttribute("sessionUser", sessionUser);
+        model.addAttribute("pageTitle", "Lịch sử chấm công");
+        model.addAttribute("attendanceHistory", attendanceService.getAttendanceHistory(sessionUser.getUserId(), 30));
+
+        return "employee/attendance-history";
+    }
+
     private AttendanceStatus determineStatus(java.time.LocalTime checkInTime, java.time.LocalTime shiftStart) {
         if (checkInTime.isAfter(shiftStart)) {
             return AttendanceStatus.TRE;
