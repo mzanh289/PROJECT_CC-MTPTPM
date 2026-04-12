@@ -13,7 +13,9 @@
         <aside class="role-sidebar role-sidebar-employee">
             <div class="role-sidebar-header">
                 <h2>Employee</h2>
-                <p th:text="${sessionUser != null ? sessionUser.fullName : 'Nhân viên'}">Nhân viên</p>
+                <form th:action="@{/logout}" method="post" class="logout-form">
+                    <button type="submit" class="logout-link">Đăng xuất</button>
+                </form>
             </div>
             <nav class="role-nav">
                 <a th:href="@{/employee/dashboard}">Dashboard</a>
@@ -21,19 +23,12 @@
                 <a th:href="@{/employee/attendance}">Check in - checkout</a>
                 <a th:href="@{/employee/attendance/history}">Lịch sử chấm công</a>
                 <a th:href="@{/employee/requests}">Request</a>
-                <a href="#">Check in - checkout</a>
-                <a href="#">Lịch sử chấm công</a>
-                <a th:href="@{/requests/my}">Request</a>
-                <a href="#">Trạng thái chấm công</a>
             </nav>
         </aside>
 
         <main class="role-main">
             <header class="role-header">
                 <h1 th:text="${pageTitle}">Employee Dashboard</h1>
-                <form th:action="@{/logout}" method="post">
-                    <button type="submit" class="logout-btn">Logout</button>
-                </form>
             </header>
             <section class="role-content" th:replace="${content}"></section>
         </main>
