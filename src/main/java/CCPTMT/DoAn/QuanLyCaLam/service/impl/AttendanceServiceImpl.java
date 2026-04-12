@@ -40,10 +40,11 @@ public class AttendanceServiceImpl implements AttendanceService {
     @Override
     public WorkSchedule getTodaySchedule(Integer userId) {
         List<WorkSchedule> schedules = workScheduleRepository.findByUserUserIdAndWorkDate(userId, LocalDate.now());
+
         if (schedules.isEmpty()) {
             return null;
         }
-        // Trả về ca gần nhất với thời gian hiện tại
+
         return findClosestSchedule(schedules, LocalTime.now());
     }
 

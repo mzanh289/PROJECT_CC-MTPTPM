@@ -1,5 +1,9 @@
 package CCPTMT.DoAn.QuanLyCaLam.controller;
 
+import java.time.LocalDate;
+import java.util.List;
+import java.util.stream.Collectors;
+
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -9,10 +13,15 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import CCPTMT.DoAn.QuanLyCaLam.dto.EmployeeShiftItemDto;
 import CCPTMT.DoAn.QuanLyCaLam.dto.LoginRequestDto;
 import CCPTMT.DoAn.QuanLyCaLam.dto.SessionUserDto;
+import CCPTMT.DoAn.QuanLyCaLam.entity.Attendance;
+import CCPTMT.DoAn.QuanLyCaLam.entity.WorkSchedule;
 import CCPTMT.DoAn.QuanLyCaLam.entity.enums.Role;
+import CCPTMT.DoAn.QuanLyCaLam.service.AttendanceService;
 import CCPTMT.DoAn.QuanLyCaLam.service.AuthService;
+import CCPTMT.DoAn.QuanLyCaLam.service.EmployeeShiftService;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -24,6 +33,8 @@ public class LoginController {
     public static final String SESSION_USER_KEY = "LOGIN_USER";
 
     private final AuthService authService;
+    private final AttendanceService attendanceService;
+    private final EmployeeShiftService employeeShiftService;
 
     @GetMapping({"/", "/login"})
     public String showLogin(@RequestParam(value = "error", required = false) String error,
@@ -86,9 +97,54 @@ public class LoginController {
             return "redirect:/admin/dashboard";
         }
 
+        LocalDate today = LocalDate.now();
+        List<EmployeeShiftItemDto> allShifts = employeeShiftService.findByUserId(sessionUser.getUserId());
+        LocalDate monthStart = today.withDayOfMonth(1);
+        LocalDate monthEnd = today.withDayOfMonth(today.lengthOfMonth());
+        List<EmployeeShiftItemDto> monthlyShifts = allShifts.stream()
+                .filter(item -> !item.getWorkDate().isBefore(monthStart) && !item.getWorkDate().isAfter(monthEnd))
+                .collect(Collectors.toList());
+        List<EmployeeShiftItemDto> upcomingShifts = monthlyShifts.stream()
+                .filter(item -> !item.getWorkDate().isBefore(today))
+                .limit(3)
+                .collect(Collectors.toList());
+
+        WorkSchedule todaySchedule = attendanceService.getTodaySchedule(sessionUser.getUserId());
+        Attendance todayAttendance = attendanceService.getTodayAttendance(sessionUser.getUserId());
+
+        String todayShiftLabel = todaySchedule != null ? todaySchedule.getShift().getShiftName() : "Chưa có ca";
+        String todayShiftTime = todaySchedule != null ?
+                String.format("%s - %s", todaySchedule.getShift().getStartTime(), todaySchedule.getShift().getEndTime()) : "-";
+        String todayAttendanceStatus = "Chưa chấm công";
+        if (todayAttendance != null && todayAttendance.getCheckIn() != null) {
+            todayAttendanceStatus = todayAttendance.getStatus() != null
+                    ? (todayAttendance.getStatus().name().equals("DI_LAM") ? "Đi làm"
+                            : todayAttendance.getStatus().name().equals("TRE") ? "Trễ"
+                                    : todayAttendance.getStatus().name())
+                    : "Đã check-in";
+        }
+
+        String todayAttendanceClass;
+        if ("Chưa chấm công".equals(todayAttendanceStatus)) {
+            todayAttendanceClass = " none";
+        } else if ("Trễ".equals(todayAttendanceStatus)) {
+            todayAttendanceClass = " pending";
+        } else {
+            todayAttendanceClass = " active";
+        }
+
         model.addAttribute("sessionUser", sessionUser);
         model.addAttribute("pageTitle", "Employee Dashboard");
-        model.addAttribute("pageDescription", "Theo dõi lịch làm, chấm công và gửi yêu cầu ngay tại đây.");
+        model.addAttribute("pageDescription", "Theo dõi ca làm, lịch phân ca trong tháng và trạng thái chấm công.");
+        model.addAttribute("todayShiftLabel", todayShiftLabel);
+        model.addAttribute("todayShiftTime", todayShiftTime);
+        model.addAttribute("todayAttendanceStatus", todayAttendanceStatus);
+        model.addAttribute("todayAttendanceClass", todayAttendanceClass);
+        model.addAttribute("currentMonthLabel", String.format("Tháng %d - %d", monthStart.getMonthValue(), monthStart.getYear()));
+        model.addAttribute("monthShiftCount", monthlyShifts.size());
+        model.addAttribute("upcomingShiftCount", upcomingShifts.size());
+        model.addAttribute("monthlyShifts", monthlyShifts);
+        model.addAttribute("upcomingShifts", upcomingShifts);
         return "employee/dashboard";
     }
 
