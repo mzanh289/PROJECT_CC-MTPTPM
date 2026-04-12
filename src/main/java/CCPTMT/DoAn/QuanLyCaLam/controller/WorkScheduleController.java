@@ -118,6 +118,13 @@ public class WorkScheduleController {
 
         model.addAttribute("targetDate", date);
         model.addAttribute("weekDays", weekDays);
+        List<LocalDate> weekDays = new ArrayList<>();
+        for (int i = 0; i < 7; i++) {
+            weekDays.add(start.plusDays(i));
+        }
+        model.addAttribute("weekDays", weekDays);
+
+        model.addAttribute("targetDate", date);
         model.addAttribute("weekStart", start);
         model.addAttribute("weekEnd", end);
         model.addAttribute("today", LocalDate.now());

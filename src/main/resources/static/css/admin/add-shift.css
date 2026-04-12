@@ -1,0 +1,109 @@
+.form-wrapper {
+    display: flex;
+    justify-content: center;
+    padding: 40px 16px;
+}
+
+.form-card {
+    width: 100%;
+    max-width: 900px;
+    background: #fff;
+    border-radius: 14px;
+    padding: 24px;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.06);
+}
+
+.form-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.form-group label {
+    font-size: 13px;
+    color: #666;
+    font-weight: 500;
+}
+
+.form-group input {
+    padding: 11px 12px;
+    border: 1px solid #e5e5e5;
+    border-radius: 10px;
+    outline: none;
+    transition: 0.2s;
+}
+
+.form-group input:focus {
+    border-color: #3b82f6;
+}
+
+.form-row {
+    display: flex;
+    gap: 12px;
+}
+
+.form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.btn-primary {
+    padding: 10px 16px;
+    border-radius: 10px;
+    border: none;
+    background: #3b82f6;
+    color: white;
+    cursor: pointer;
+}
+
+.btn-primary:hover {
+    background: #2563eb;
+}
+
+.btn-secondary {
+    padding: 10px 16px;
+    border-radius: 10px;
+    background: #f3f4f6;
+    color: #444;
+    text-decoration: none;
+}
+
+.btn-secondary:hover {
+    background: #e5e7eb;
+}
+
+.form-row {
+    display: flex;
+    gap: 16px;
+}
+
+.form-row .form-group {
+    flex: 1;
+}
+
+.hero-box {
+    background: #fff;
+    border-radius: 14px;
+    padding: 14px 18px;
+
+    box-shadow: 0 6px 20px rgba(0,0,0,0.06);
+    border: 1px solid #e5e7eb;
+
+    margin-bottom: 20px;
+}
+.page-title {
+    margin-bottom: 12px; 
+}
+
+.page-subtitle {
+    font-size: 13px;
+    margin: 0;
+}

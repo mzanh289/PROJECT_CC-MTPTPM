@@ -106,16 +106,45 @@ body {
 
 @media (max-width: 900px) {
     .role-shell {
-        grid-template-columns: 1fr;
+        display: flex;
+        height: 100vh; 
     }
 
     .role-sidebar {
-        padding: 14px;
+        display: flex;
+        flex-direction: column;
+        height: 100%;
     }
 
     .role-nav {
-        display: grid;
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 8px;
+        flex: 1;
     }
+
+    .sidebar-footer {
+        padding: 10px;
+    }
+}
+
+.header-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.logout-form {
+    margin: 0;
+}
+
+.logout-link {
+    background: none;
+    border: none;
+    color: #ffdddd;
+    font-size: 14px;
+    cursor: pointer;
+    padding: 0;
+}
+
+.logout-link:hover {
+    text-decoration: underline;
+    color: #ffffff;
 }
