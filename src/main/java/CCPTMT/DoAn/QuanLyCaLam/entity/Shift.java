@@ -34,7 +34,7 @@ public class Shift {
     @Column(name = "ShiftID")
     private Integer shiftId;
 
-    @Column(name = "ShiftName", nullable = false, length = 100, columnDefinition = "nvarchar(100)")
+    @Column(name = "ShiftName", nullable = false, length = 100)
     private String shiftName;
 
     @DateTimeFormat(pattern = "HH:mm")

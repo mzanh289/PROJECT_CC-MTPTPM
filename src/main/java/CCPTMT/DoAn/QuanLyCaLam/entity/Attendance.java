@@ -55,6 +55,6 @@ public class Attendance {
 
     // ====== MERGED STATUS ======
     @Enumerated(EnumType.STRING)
-    @Column(name = "Status", nullable = false, length = 20, columnDefinition = "nvarchar(20)")
+    @Column(name = "Status", nullable = false, length = 20)
     private AttendanceStatus status;
 }

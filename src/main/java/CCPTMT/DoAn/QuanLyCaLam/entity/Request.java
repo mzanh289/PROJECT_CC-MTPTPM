@@ -41,7 +41,7 @@ public class Request {
     private User user;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "Type", nullable = false, length = 20, columnDefinition = "nvarchar(20)")
+    @Column(name = "Type", nullable = false, length = 20)
     private RequestType type;
 
     @Column(name = "FromDate")
@@ -50,7 +50,7 @@ public class Request {
     @Column(name = "ToDate")
     private LocalDate toDate;
 
-    @Column(name = "Reason", nullable = false, columnDefinition = "nvarchar(500)")
+    @Column(name = "Reason", nullable = false, length = 500)
     private String reason;
 
     @Enumerated(EnumType.STRING)
