@@ -40,21 +40,25 @@ public class EmployeeAttendanceController {
         WorkSchedule todaySchedule = attendanceService.getTodaySchedule(sessionUser.getUserId());
         boolean hasAssignedShift = todaySchedule != null;
 
-        if (todayAttendance != null && todayAttendance.getStatus() == null && todayAttendance.getCheckIn() != null && todaySchedule != null) {
-            todayAttendance.setStatus(determineStatus(todayAttendance.getCheckIn().toLocalTime(), todaySchedule.getShift().getStartTime()));
+        if (todayAttendance != null && todayAttendance.getStatus() == null && todayAttendance.getCheckIn() != null
+                && todaySchedule != null) {
+            todayAttendance.setStatus(determineStatus(todayAttendance.getCheckIn().toLocalTime(),
+                    todaySchedule.getShift().getStartTime()));
         }
 
-        boolean isEarlyCheckout = todayAttendance != null && todaySchedule != null && todayAttendance.getCheckOut() != null
+        boolean isEarlyCheckout = todayAttendance != null && todaySchedule != null
+                && todayAttendance.getCheckOut() != null
                 && todayAttendance.getCheckOut().toLocalTime().isBefore(todaySchedule.getShift().getEndTime());
 
         boolean isMarkedAbsent = todayAttendance != null && todayAttendance.getStatus() == AttendanceStatus.NGHI;
         boolean isWithinCheckInWindow = hasAssignedShift && isWithinCheckInWindow(todaySchedule);
         boolean canCheckIn = hasAssignedShift
-            && (todayAttendance == null || todayAttendance.getCheckIn() == null)
-            && !isMarkedAbsent
-            && isWithinCheckInWindow;
-        boolean canCheckOut = hasAssignedShift && todayAttendance != null && todayAttendance.getCheckIn() != null
-                && todayAttendance.getCheckOut() == null;
+                && (todayAttendance == null || todayAttendance.getCheckIn() == null)
+                && !isMarkedAbsent
+                && isWithinCheckInWindow;
+        boolean canCheckOut = hasAssignedShift
+                && (todayAttendance == null || todayAttendance.getCheckOut() == null)
+                && !isMarkedAbsent;
 
         model.addAttribute("sessionUser", sessionUser);
         model.addAttribute("pageTitle", "Chấm công");
