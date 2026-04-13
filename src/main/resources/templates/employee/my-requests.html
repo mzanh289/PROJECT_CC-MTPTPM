@@ -138,7 +138,7 @@
 		}
 
 		.table thead th,
-			.table tbody td {
+		.table tbody td {
 			padding: 14px 16px;
 			border: 1px solid #cbd5e1;
 		}
@@ -314,7 +314,7 @@
 			</div>
 
 			<!-- Alert Messages -->
-			<div th:if="${successMessage}" class="alert">
+			<div th:if="${successMessage}" class="alert" data-testid="request-success">
 				<i class="fas fa-check-circle"></i>
 				<div>
 					<strong>Thành công!</strong>
@@ -324,7 +324,7 @@
 
 			<!-- Main Table -->
 			<div class="table-container">
-				<table class="table">
+				<table class="table" data-testid="request-table">
 					<thead>
 						<tr>
 							<th style="width: 10%;">Mã đơn</th>
@@ -342,7 +342,8 @@
 								<span style="font-weight: 600; color: #64748b;">#[[${request.requestId}]]</span>
 							</td>
 							<td>
-								<span th:class="'type-tag ' + (${request.type.name() == 'LEAVE'} ? 'type-leave' : 'type-shift')"
+								<span
+									th:class="'type-tag ' + (${request.type.name() == 'LEAVE'} ? 'type-leave' : 'type-shift')"
 									th:text="${request.type.name() == 'LEAVE' ? 'Xin nghỉ' : 'Đổi ca'}"></span>
 							</td>
 							<td>
@@ -391,7 +392,8 @@
 								<div class="empty-state">
 									<div class="empty-icon"><i class="fas fa-folder-open"></i></div>
 									<div class="empty-text">Bạn chưa có yêu cầu nào</div>
-									<div class="empty-desc">Mọi yêu cầu xin nghỉ hoặc đổi ca của bạn sẽ được hiển thị tại đây.
+									<div class="empty-desc">Mọi yêu cầu xin nghỉ hoặc đổi ca của bạn sẽ được hiển thị
+										tại đây.
 									</div>
 									<div class="header-actions" style="justify-content: center;">
 										<a th:href="@{/requests/create}" class="btn btn-primary">Gửi yêu cầu ngay</a>

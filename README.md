@@ -153,41 +153,35 @@ docker-compose up --build -d
 
 ---
 
-## 🇻🇳 7. Lỗi tiếng Việt khi insert
 
-Nếu gặp lỗi dữ liệu tiếng Việt bị sai dấu, hệ thống hiện tại đã cấu hình:
+## 🧪 7. Cypress E2E (có ghi video)
 
-* MySQL server dùng `utf8mb4` + `utf8mb4_unicode_ci`
-* `init.sql` có `SET NAMES utf8mb4`
-* JDBC URL bật `useUnicode=true&characterEncoding=utf8`
-
-Để áp dụng lại hoàn toàn cấu hình charset cho DB cũ, chạy:
+### Cài đặt một lần
 
 ```bash
-docker-compose down -v
-docker-compose up --build -d
+npm install
 ```
 
-Và đảm bảo file `docker/mysql/init/init.sql` được lưu bằng UTF-8.
-
----
-
-## ✅ 8. Nút check-in/check-out không bấm được
-
-Nút sẽ bị disable khi không thỏa điều kiện nghiệp vụ:
-
-* Không có ca làm trong ngày
-* Đã check-in hoặc đã check-out trước đó
-* Đang ở trạng thái nghỉ (`NGHI`)
-* Check-in ngoài khung thời gian cho phép (30 phút trước ca đến hết ca)
-* Timezone container lệch so với giờ Việt Nam
-
-Để test lại từ dữ liệu mẫu mới (ngày động theo `CURDATE()`):
+### Chạy test có ghi video tự động
 
 ```bash
-docker-compose down -v
-docker-compose up --build -d
+npm run e2e:video
 ```
 
-Với seed hiện tại, tài khoản `employee1@company.com` sẽ có ca trong ngày để test check-in/check-out.
-Mặc định timezone đã đặt là `Asia/Ho_Chi_Minh`.
+Script này sẽ:
+
+1. `docker-compose up -d`
+2. chờ app sẵn sàng tại `http://localhost:8081/login`
+3. chạy Cypress headless với `video=true`
+4. tự `docker-compose down` khi xong
+
+### Vị trí artifacts
+
+- Video: `cypress/videos`
+- Screenshot khi fail: `cypress/screenshots`
+
+### Mở giao diện Cypress để debug
+
+```bash
+npm run cy:open
+```

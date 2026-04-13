@@ -8,28 +8,28 @@
 
         <div class="user-alert user-alert-error" th:if="${errorMessage}" th:text="${errorMessage}"></div>
 
-        <form class="user-form" th:action="${submitUrl}" method="post" th:object="${userForm}">
+        <form class="user-form" th:action="${submitUrl}" method="post" th:object="${userForm}" data-testid="user-form">
             <div class="field-group">
                 <label for="fullName">Họ tên</label>
-                <input id="fullName" type="text" th:field="*{fullName}" required>
+                <input id="fullName" type="text" th:field="*{fullName}" required data-testid="user-fullname">
                 <small class="field-error" th:if="${#fields.hasErrors('fullName')}" th:errors="*{fullName}"></small>
             </div>
 
             <div class="field-group">
                 <label for="email">Email</label>
-                <input id="email" type="email" th:field="*{email}" required>
+                <input id="email" type="email" th:field="*{email}" required data-testid="user-email">
                 <small class="field-error" th:if="${#fields.hasErrors('email')}" th:errors="*{email}"></small>
             </div>
 
             <div class="field-group">
                 <label for="phone">Số điện thoại</label>
-                <input id="phone" type="text" th:field="*{phone}">
+                <input id="phone" type="text" th:field="*{phone}" data-testid="user-phone">
                 <small class="field-error" th:if="${#fields.hasErrors('phone')}" th:errors="*{phone}"></small>
             </div>
 
             <div class="field-group">
                 <label for="status">Trạng thái</label>
-                <select id="status" th:field="*{status}" required>
+                <select id="status" th:field="*{status}" required data-testid="user-status">
                     <option th:value="true">Active</option>
                     <option th:value="false">Inactive</option>
                 </select>
@@ -37,12 +37,14 @@
             </div>
 
             <div class="field-group">
-                <label for="password" th:text="${isEdit} ? 'Mật khẩu mới (để trống nếu giữ nguyên)' : 'Mật khẩu'"></label>
-                <input id="password" type="password" th:field="*{password}" th:required="${!isEdit}">
+                <label for="password"
+                    th:text="${isEdit} ? 'Mật khẩu mới (để trống nếu giữ nguyên)' : 'Mật khẩu'"></label>
+                <input id="password" type="password" th:field="*{password}" th:required="${!isEdit}"
+                    data-testid="user-password">
             </div>
 
             <div class="form-actions">
-                <button type="submit" class="user-btn user-btn-primary">Lưu</button>
+                <button type="submit" class="user-btn user-btn-primary" data-testid="user-save">Lưu</button>
                 <a th:href="@{/admin/users}" class="user-btn user-btn-ghost">Quay lại</a>
             </div>
         </form>

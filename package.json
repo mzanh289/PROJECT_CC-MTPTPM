@@ -1,0 +1,30 @@
+{
+  "name": "project_cc-mtptpm",
+  "version": "1.0.0",
+  "description": "```bash\r git clone <repo-url>\r cd <project-folder>\r ```",
+  "main": "index.js",
+  "scripts": {
+    "cy:open": "cypress open",
+    "cy:run": "cypress run",
+    "cy:run:video": "cypress run --config video=true",
+    "e2e:up": "docker-compose up -d",
+    "e2e:down": "docker-compose down",
+    "e2e:video": "powershell -ExecutionPolicy Bypass -File ./scripts/run-cypress-video.ps1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mzanh289/PROJECT_CC-MTPTPM.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/mzanh289/PROJECT_CC-MTPTPM/issues"
+  },
+  "homepage": "https://github.com/mzanh289/PROJECT_CC-MTPTPM#readme",
+  "devDependencies": {
+    "cypress": "^15.13.1",
+    "wait-on": "^9.0.5"
+  }
+}
