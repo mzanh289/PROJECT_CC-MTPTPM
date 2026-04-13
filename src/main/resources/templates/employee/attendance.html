@@ -136,23 +136,29 @@
         <div class="attendance-card">
             <div class="attendance-header">
                 <h1>Chấm công</h1>
-                <p>Check-in / Check-out theo ca được phân. Nếu hôm nay không có ca, bạn sẽ không thể thực hiện chấm công.</p>
+                <p>Check-in / Check-out theo ca được phân. Nếu hôm nay không có ca, bạn sẽ không thể thực hiện chấm
+                    công.</p>
             </div>
             <div class="attendance-body">
                 <div class="status-grid">
                     <div class="status-card">
                         <div class="status-label">Trạng thái ca</div>
-                        <div class="status-value" th:text="${hasAssignedShift ? 'Đã phân ca' : 'Chưa phân ca'}">Chưa phân ca</div>
+                        <div class="status-value" th:text="${hasAssignedShift ? 'Đã phân ca' : 'Chưa phân ca'}">Chưa
+                            phân ca</div>
                     </div>
                     <div class="status-card">
                         <div class="status-label">Ngày</div>
-                        <div class="status-value" th:text="${#temporals.format(T(java.time.LocalDate).now(), 'EEEE, dd/MM/yyyy')}">Thứ Năm, 10/04/2026</div>
+                        <div class="status-value"
+                            th:text="${#temporals.format(T(java.time.LocalDate).now(), 'EEEE, dd/MM/yyyy')}">Thứ Năm,
+                            10/04/2026</div>
                     </div>
                     <div class="status-card" th:if="${hasAssignedShift}">
                         <div class="status-label">Tình trạng chấm công</div>
                         <div class="status-value">
-                            <span th:if="${todayAttendance == null or todayAttendance.checkIn == null}">Chưa chấm công</span>
-                            <span th:if="${todayAttendance != null and todayAttendance.checkIn != null}" th:switch="${todayAttendance.status.name()}">
+                            <span th:if="${todayAttendance == null or todayAttendance.checkIn == null}">Chưa chấm
+                                công</span>
+                            <span th:if="${todayAttendance != null and todayAttendance.checkIn != null}"
+                                th:switch="${todayAttendance.status.name()}">
                                 <span th:case="'DI_LAM'">Đi làm</span>
                                 <span th:case="'TRE'">Trễ</span>
                                 <span th:case="'NGHI'">Nghỉ</span>
@@ -175,26 +181,33 @@
                 </div>
 
                 <div class="actions-row">
-                    <form th:action="@{/employee/attendance/checkin}" method="post">
-                        <button type="submit" class="button-checkin" th:classappend="${!canCheckIn} ? ' button-disabled' : ''" th:disabled="${!canCheckIn}">Check-in</button>
+                    <form th:action="@{/employee/attendance/checkin}" method="post" data-testid="checkin-form">
+                        <button type="submit" class="button-checkin"
+                            th:classappend="${!canCheckIn} ? ' button-disabled' : ''" th:disabled="${!canCheckIn}"
+                            data-testid="checkin-btn">Check-in</button>
                     </form>
-                    <form th:action="@{/employee/attendance/checkout}" method="post">
-                        <button type="submit" class="button-checkout" th:classappend="${!canCheckOut} ? ' button-disabled' : ''" th:disabled="${!canCheckOut}">Check-out</button>
+                    <form th:action="@{/employee/attendance/checkout}" method="post" data-testid="checkout-form">
+                        <button type="submit" class="button-checkout"
+                            th:classappend="${!canCheckOut} ? ' button-disabled' : ''" th:disabled="${!canCheckOut}"
+                            data-testid="checkout-btn">Check-out</button>
                     </form>
                 </div>
 
                 <div class="helper-text">
                     <p th:if="${!hasAssignedShift}">Hôm nay bạn chưa được phân ca, nên không thể chấm công.</p>
-                    <p th:if="${hasAssignedShift and todayAttendance == null}">Bạn có thể check-in trong khoảng 30 phút trước ca làm đến khi hết ca.</p>
-                    <p th:if="${todayAttendance != null and todayAttendance.checkIn != null}">Check-in lúc <strong th:text="${#temporals.format(todayAttendance.checkIn, 'HH:mm')}"></strong>.</p>
-                    <p th:if="${todayAttendance != null and todayAttendance.checkOut != null}">Check-out lúc <strong th:text="${#temporals.format(todayAttendance.checkOut, 'HH:mm')}"></strong>.</p>
+                    <p th:if="${hasAssignedShift and todayAttendance == null}">Bạn có thể check-in trong khoảng 30 phút
+                        trước ca làm đến khi hết ca.</p>
+                    <p th:if="${todayAttendance != null and todayAttendance.checkIn != null}">Check-in lúc <strong
+                            th:text="${#temporals.format(todayAttendance.checkIn, 'HH:mm')}"></strong>.</p>
+                    <p th:if="${todayAttendance != null and todayAttendance.checkOut != null}">Check-out lúc <strong
+                            th:text="${#temporals.format(todayAttendance.checkOut, 'HH:mm')}"></strong>.</p>
                     <p th:if="${isEarlyCheckout}">Bạn đã out sớm so với giờ kết thúc ca.</p>
                 </div>
 
-                <div class="message-box" th:if="${success != null}">
+                <div class="message-box" th:if="${success != null}" data-testid="attendance-success">
                     <p th:text="${success}"></p>
                 </div>
-                <div class="message-box error" th:if="${error != null}">
+                <div class="message-box error" th:if="${error != null}" data-testid="attendance-error">
                     <p th:text="${error}"></p>
                 </div>
             </div>

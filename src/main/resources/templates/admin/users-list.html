@@ -6,7 +6,8 @@
     <section class="users-panel">
         <div class="users-panel-header">
             <h2>Danh sách Users</h2>
-            <a class="user-btn user-btn-primary" th:href="@{/admin/users/new}">+ Tạo User</a>
+            <a class="user-btn user-btn-primary" th:href="@{/admin/users/new}" data-testid="create-user-link">+ Tạo
+                User</a>
         </div>
 
         <form class="filter-form" th:action="@{/admin/users}" method="get">
@@ -23,7 +24,7 @@
         <div class="user-alert user-alert-error" th:if="${errorMessage}" th:text="${errorMessage}"></div>
 
         <div class="table-wrap">
-            <table class="users-table">
+            <table class="users-table" data-testid="users-table">
                 <thead>
                     <tr>
                         <th>ID</th>
@@ -38,20 +39,23 @@
                     <tr th:if="${#lists.isEmpty(users)}">
                         <td colspan="6" class="empty-cell">Không có user theo bộ lọc hiện tại.</td>
                     </tr>
-                    <tr th:each="u : ${users}">
+                    <tr th:each="u : ${users}" th:attr="data-testid=${'user-row-' + u.userId}">
                         <td th:text="${u.userId}">1</td>
                         <td th:text="${u.fullName}">Nguyen Van A</td>
                         <td th:text="${u.email}">a@x.com</td>
                         <td th:text="${u.phone}">0900000000</td>
                         <td>
-                            <span class="status-chip" th:classappend="${u.status} ? ' status-active' : ' status-inactive'"
+                            <span class="status-chip"
+                                th:classappend="${u.status} ? ' status-active' : ' status-inactive'"
                                 th:text="${u.status} ? 'Active' : 'Inactive'">Active</span>
                         </td>
                         <td class="actions-cell">
-                            <a class="user-btn user-btn-ghost" th:href="@{'/admin/users/' + ${u.userId} + '/edit'}">Sửa</a>
+                            <a class="user-btn user-btn-ghost" th:href="@{'/admin/users/' + ${u.userId} + '/edit'}"
+                                th:attr="data-testid=${'edit-user-' + u.userId}">Sửa</a>
                             <form th:action="@{'/admin/users/' + ${u.userId} + '/delete'}" method="post"
                                 onsubmit="return confirm('Bạn có chắc muốn xóa user này?');">
-                                <button class="user-btn user-btn-danger" type="submit">Xóa</button>
+                                <button class="user-btn user-btn-danger" type="submit"
+                                    th:attr="data-testid=${'delete-user-' + u.userId}">Xóa</button>
                             </form>
                         </td>
                     </tr>

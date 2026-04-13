@@ -154,5 +154,34 @@ docker-compose up --build -d
 ---
 
 
-Với seed hiện tại, tài khoản `employee1@company.com` sẽ có ca trong ngày để test check-in/check-out.
-Mặc định timezone đã đặt là `Asia/Ho_Chi_Minh`.
+## 🧪 7. Cypress E2E (có ghi video)
+
+### Cài đặt một lần
+
+```bash
+npm install
+```
+
+### Chạy test có ghi video tự động
+
+```bash
+npm run e2e:video
+```
+
+Script này sẽ:
+
+1. `docker-compose up -d`
+2. chờ app sẵn sàng tại `http://localhost:8081/login`
+3. chạy Cypress headless với `video=true`
+4. tự `docker-compose down` khi xong
+
+### Vị trí artifacts
+
+- Video: `cypress/videos`
+- Screenshot khi fail: `cypress/screenshots`
+
+### Mở giao diện Cypress để debug
+
+```bash
+npm run cy:open
+```
