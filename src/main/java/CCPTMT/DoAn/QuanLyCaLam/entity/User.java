@@ -34,7 +34,7 @@ public class User {
     @Column(name = "UserID")
     private Integer userId;
 
-    @Column(name = "FullName", nullable = false, length = 255, columnDefinition = "nvarchar(255)")
+    @Column(name = "FullName", nullable = false, length = 255)
     private String fullName;
 
     @Column(name = "Email", nullable = false, unique = true, length = 255)
