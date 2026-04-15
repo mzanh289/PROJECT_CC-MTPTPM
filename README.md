@@ -1,20 +1,20 @@
-# Shift Management - Local, Cypress, Render
+# Shift Management - Docker, Cypress, Render
 
-README nay tap trung vao 3 nhu cau chinh:
-1. Chay local bang Docker
-2. Chay Cypress UI va E2E test
-3. Cau hinh de deploy len Render
+README này tập trung vào 3 nhu cầu chính:
+1. Chạy local bằng Docker
+2. Chạy Cypress UI và E2E test
+3. Cấu hình để deploy lên Render
 
-## 1. Yeu cau moi truong
+## 1. Yêu cầu môi trường
 
 - Docker Desktop
 - Node.js 18+
 - npm
 - Git
 
-## 2. Chay ung dung bang Docker (Local)
+## 2. Chạy ứng dụng bằng Docker (Local)
 
-### Buoc 1: Tao file moi truong
+### Bước 1: Tạo file môi trường
 
 Windows PowerShell:
 
@@ -28,7 +28,7 @@ macOS/Linux:
 cp .env.example .env
 ```
 
-Noi dung bien quan trong trong `.env`:
+Biến quan trọng trong `.env`:
 
 ```properties
 APP_PORT=8081
@@ -40,129 +40,129 @@ MYSQL_PASSWORD=shift_pass
 MYSQL_ROOT_PASSWORD=root123
 ```
 
-### Buoc 2: Khoi dong he thong
+### Bước 2: Khởi động hệ thống
 
 ```bash
 docker-compose up -d
 ```
 
-Kiem tra:
+Kiểm tra:
 - App: http://localhost:8081
 - Login: http://localhost:8081/login
 - MySQL host: localhost:3307
 
-### Buoc 3: Dung he thong
+### Bước 3: Dừng hệ thống
 
 ```bash
 docker-compose down
 ```
 
-### Reset sach DB (neu can)
+### Reset sạch DB (nếu cần)
 
 ```bash
 docker-compose down -v
 docker-compose up --build -d
 ```
 
-Luu y:
-- `init.sql` chi chay khi volume DB moi duoc tao.
-- `down -v` se xoa toan bo du lieu DB local.
+Lưu ý:
+- `init.sql` chỉ chạy khi volume DB mới được tạo.
+- `down -v` sẽ xóa toàn bộ dữ liệu DB local.
 
-## 3. Chay Cypress UI va E2E test
+## 3. Chạy Cypress UI và E2E test
 
-### Cai dat dependencies
+### Cài đặt dependencies
 
 ```bash
 npm install
 ```
 
-### Mo giao dien Cypress (UI)
+### Mở giao diện Cypress (UI)
 
 ```bash
 npm run cy:open
 ```
 
 Trong Cypress:
-1. Chon E2E Testing
-2. Chon browser (Chrome/Edge)
-3. Chon file test de chay
+1. Chọn E2E Testing
+2. Chọn browser (Chrome/Edge)
+3. Chọn file test để chạy
 
-Spec hien co:
+Spec hiện có:
 - `cypress/e2e/01-auth/auth.cy.js`
 - `cypress/e2e/02-admin/users.cy.js`
 - `cypress/e2e/03-employee/requests.cy.js`
 - `cypress/e2e/04-rbac/rbac.cy.js`
 
-### Chay headless
+### Chạy headless
 
 ```bash
 npm run cy:run
 ```
 
-### Chay headless co video
+### Chạy headless có video
 
 ```bash
 npm run cy:run:video
 ```
 
-### Chay full flow tu dong tren Windows (build Docker + wait + test + down)
+### Chạy full flow tự động trên Windows (build Docker + wait + test + down)
 
 ```bash
 npm run e2e:video
 ```
 
-Script PowerShell se:
+Script PowerShell sẽ:
 1. `docker-compose up --build -d`
-2. Cho endpoint `http://localhost:8081/login` san sang
-3. Chay Cypress headless voi `video=true`
+2. Chờ endpoint `http://localhost:8081/login` sẵn sàng
+3. Chạy Cypress headless với `video=true`
 4. `docker-compose down`
 
 Artifacts:
 - Video: `cypress/videos`
 - Screenshot khi fail: `cypress/screenshots`
 
-## 4. Cau hinh deploy len Render
+## 4. Cấu hình deploy lên Render
 
-Project da san sang nhung diem sau:
-- Server dung cong dong tu Render: `server.port=${PORT:8081}`
-- Datasource dung env vars:
-	- `SPRING_DATASOURCE_URL`
-	- `SPRING_DATASOURCE_USERNAME`
-	- `SPRING_DATASOURCE_PASSWORD`
-- Da co `Dockerfile` de build va run app
+Project đã sẵn sàng ở các điểm sau:
+- Server dùng cổng động từ Render: `server.port=${PORT:8081}`
+- Datasource dùng env vars:
+  - `SPRING_DATASOURCE_URL`
+  - `SPRING_DATASOURCE_USERNAME`
+  - `SPRING_DATASOURCE_PASSWORD`
+- Đã có `Dockerfile` để build và run app
 
-### Cach deploy khuyen nghi (Render Web Service voi Docker)
+### Cách deploy khuyến nghị (Render Web Service với Docker)
 
-1. Push code len GitHub
-2. Tren Render: New + -> Web Service
-3. Connect repo, chon branch
+1. Push code lên GitHub
+2. Trên Render: New + -> Web Service
+3. Connect repo, chọn branch
 4. Environment: Docker
-5. Render se build bang `Dockerfile`
-6. Set Environment Variables tren Render:
+5. Render sẽ build bằng `Dockerfile`
+6. Set Environment Variables trên Render:
 
-Bat buoc:
+Bắt buộc:
 - `SPRING_DATASOURCE_URL`
 - `SPRING_DATASOURCE_USERNAME`
 - `SPRING_DATASOURCE_PASSWORD`
 
-Khuyen nghi:
+Khuyến nghị:
 - `SPRING_SQL_INIT_MODE=never`
 - `TZ=Asia/Ho_Chi_Minh`
 - `JAVA_TOOL_OPTIONS=-Duser.timezone=Asia/Ho_Chi_Minh`
 
-Luu y quan trong khi deploy:
-- Khong can set `PORT` thu cong tren Render (Render tu cap).
-- Khong dung `docker-compose.yml` de chay production tren Render.
-- Khong commit `.env` len repository.
+Lưu ý quan trọng khi deploy:
+- Không cần set `PORT` thủ công trên Render (Render tự cấp).
+- Không dùng `docker-compose.yml` để chạy production trên Render.
+- Không commit `.env` lên repository.
 
-## 5. Kiem tra sau deploy
+## 5. Kiểm tra sau deploy
 
-Sau khi deploy thanh cong:
-1. Mo URL service tren Render
-2. Truy cap `/login`
-3. Dang nhap va kiem tra nhanh cac man hinh chinh
+Sau khi deploy thành công:
+1. Mở URL service trên Render
+2. Truy cập `/login`
+3. Đăng nhập và kiểm tra nhanh các màn hình chính
 
-Neu muon chay Cypress vao moi truong Render (staging/prod), co the override `baseUrl`:
+Nếu muốn chạy Cypress vào môi trường Render (staging/prod), có thể override `baseUrl`:
 
 ```bash
 npx cypress open --config baseUrl=https://your-service.onrender.com
