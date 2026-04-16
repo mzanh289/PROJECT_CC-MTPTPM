@@ -1,5 +1,5 @@
-describe("Admin user management", () => {
-  it("creates a new user and marks it inactive", () => {
+describe("Admin - Quản lý người dùng", () => {
+  it("Tạo mới người dùng và chuyển sang trạng thái không hoạt động", () => {
     const unique = Date.now();
     const email = `cypress.user.${unique}@example.com`;
 

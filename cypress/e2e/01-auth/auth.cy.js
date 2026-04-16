@@ -1,16 +1,16 @@
-describe("Auth flow", () => {
-  it("logs in with admin account", () => {
+describe("Xác thực đăng nhập", () => {
+  it("Đăng nhập thành công với tài khoản admin", () => {
     cy.loginAsAdmin();
     cy.contains("h2", "Xin chao", { matchCase: false }).should("be.visible");
   });
 
-  it("shows error for invalid credentials", () => {
+  it("Hiển thị lỗi khi nhập sai thông tin đăng nhập", () => {
     cy.login("admin@company.com", "wrong-password");
     cy.url().should("include", "/login");
     cy.getByTestId("login-error").should("be.visible");
   });
 
-  it("logs out from employee role", () => {
+  it("Đăng xuất thành công với vai trò nhân viên", () => {
     cy.loginAsEmployee();
     cy.getByTestId("logout-button").click();
     cy.url().should("include", "/login");
