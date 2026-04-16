@@ -40,7 +40,22 @@ public class AdminReportController {
             return "redirect:/employee/dashboard";
         }
 
-        AdminAttendanceReportDto reportData = adminReportService.buildAttendanceReport(period, referenceDate);
+        String normalizedPeriod = normalizePeriod(period);
+        if (!normalizedPeriod.equalsIgnoreCase(period)) {
+            model.addAttribute("warning", "Kỳ báo cáo không hợp lệ, hệ thống đã chuyển về chế độ theo ngày.");
+        }
+
+        AdminAttendanceReportDto reportData;
+        try {
+            reportData = adminReportService.buildAttendanceReport(normalizedPeriod, referenceDate);
+        } catch (Exception ex) {
+            model.addAttribute("sessionUser", sessionUser);
+            model.addAttribute("pageTitle", "Báo cáo chấm công");
+            model.addAttribute("selectedPeriod", normalizedPeriod);
+            model.addAttribute("selectedDate", referenceDate != null ? referenceDate : LocalDate.now());
+            model.addAttribute("error", "Không thể tải báo cáo lúc này. Vui lòng thử lại sau.");
+            return "admin/reports";
+        }
 
         model.addAttribute("sessionUser", sessionUser);
         model.addAttribute("pageTitle", "Báo cáo chấm công");
@@ -61,7 +76,8 @@ public class AdminReportController {
             return ResponseEntity.status(403).build();
         }
 
-        AdminAttendanceReportDto reportData = adminReportService.buildAttendanceReport(period, referenceDate);
+        String normalizedPeriod = normalizePeriod(period);
+        AdminAttendanceReportDto reportData = adminReportService.buildAttendanceReport(normalizedPeriod, referenceDate);
         byte[] pdfBytes = adminReportService.exportAttendanceReportPdf(reportData);
 
         String fileName = "bao-cao-cham-cong-" + reportData.getFromDate() + "-" + reportData.getToDate() + ".pdf";
@@ -71,5 +87,15 @@ public class AdminReportController {
         headers.setContentDisposition(ContentDisposition.attachment().filename(fileName).build());
 
         return ResponseEntity.ok().headers(headers).body(pdfBytes);
+    }
+
+    private String normalizePeriod(String period) {
+        if ("week".equalsIgnoreCase(period)) {
+            return "week";
+        }
+        if ("month".equalsIgnoreCase(period)) {
+            return "month";
+        }
+        return "day";
     }
 }

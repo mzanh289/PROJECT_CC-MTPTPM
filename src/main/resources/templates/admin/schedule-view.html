@@ -4,6 +4,32 @@
 
 <th:block th:fragment="content">
     <link rel="stylesheet" th:href="@{/css/style.css}">
+    <style>
+        .inline-alert {
+            border-radius: 10px;
+            padding: 10px 14px;
+            margin-bottom: 14px;
+            font-weight: 600;
+        }
+
+        .inline-alert--success {
+            background: #ecfdf5;
+            color: #065f46;
+            border: 1px solid #a7f3d0;
+        }
+
+        .inline-alert--error {
+            background: #fef2f2;
+            color: #991b1b;
+            border: 1px solid #fecaca;
+        }
+
+        .inline-alert--warning {
+            background: #fffbeb;
+            color: #92400e;
+            border: 1px solid #fcd34d;
+        }
+    </style>
     <div class="schedule-shell">
         <header class="hero-panel">
             <div class="hero-copy">
@@ -22,6 +48,10 @@
                 </nav>
             </div>
         </header>
+
+        <div th:if="${success != null}" class="inline-alert inline-alert--success" th:text="${success}"></div>
+        <div th:if="${error != null}" class="inline-alert inline-alert--error" th:text="${error}"></div>
+        <div th:if="${warning != null}" class="inline-alert inline-alert--warning" th:text="${warning}"></div>
 
         <!-- View Toggle -->
         <div class="surface-card" th:if="${viewType == null || viewType == 'daily' || viewType == 'weekly'}">
@@ -87,7 +117,8 @@
                             <td th:text="${schedule.shift.startTime + ' - ' + schedule.shift.endTime}">06:00 - 14:00
                             </td>
                             <td>
-                                <a class="action-btn" th:href="@{/admin/schedule/{id}/edit(id=${schedule.scheduleId})}">Sửa</a>
+                                <a class="action-btn"
+                                    th:href="@{/admin/schedule/{id}/edit(id=${schedule.scheduleId})}">Sửa</a>
                             </td>
                         </tr>
                     </tbody>
@@ -169,7 +200,8 @@
                         <td th:text="${schedule.shift.startTime}">06:00</td>
                         <td th:text="${schedule.shift.endTime}">14:00</td>
                         <td>
-                            <a class="action-btn" th:href="@{/admin/schedule/{id}/edit(id=${schedule.scheduleId})}">Sửa</a>
+                            <a class="action-btn"
+                                th:href="@{/admin/schedule/{id}/edit(id=${schedule.scheduleId})}">Sửa</a>
                         </td>
                     </tr>
                 </tbody>

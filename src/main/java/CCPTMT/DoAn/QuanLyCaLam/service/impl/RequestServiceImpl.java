@@ -24,57 +24,65 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class RequestServiceImpl implements RequestService {
 
-    private final RequestRepository requestRepository;
-    private final UserRepository userRepository;
-    private final WorkScheduleRepository workScheduleRepository;
-    private final ShiftRepository shiftRepository;
+        private final RequestRepository requestRepository;
+        private final UserRepository userRepository;
+        private final WorkScheduleRepository workScheduleRepository;
+        private final ShiftRepository shiftRepository;
 
-    @Override
-    @Transactional
-    public Request createRequest(Integer userId, RequestCreateDto dto) {
-        // Validate date range: fromDate <= toDate
-        if (!dto.isValidDateRange()) {
-            throw new IllegalArgumentException("Ngày bắt đầu phải nhỏ hơn hoặc bằng ngày kết thúc");
+        @Override
+        @Transactional
+        public Request createRequest(Integer userId, RequestCreateDto dto) {
+                // Validate date range: fromDate <= toDate
+                if (!dto.isValidDateRange()) {
+                        throw new IllegalArgumentException("Ngày bắt đầu phải nhỏ hơn hoặc bằng ngày kết thúc");
+                }
+
+                // Find user
+                User user = userRepository.findById(userId)
+                                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy nhân viên"));
+
+                // Create request with PENDING status and current timestamp
+                Request request = Request.builder()
+                                .user(user)
+                                .type(dto.getType())
+                                .fromDate(dto.getFromDate())
+                                .toDate(dto.getToDate())
+                                .reason(dto.getReason())
+                                .status(RequestStatus.PENDING)
+                                .createdAt(LocalDateTime.now())
+                                .build();
+
+                return requestRepository.save(request);
         }
 
-        // Find user
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy nhân viên"));
+        @Override
+        public List<Request> getRequestsByUserId(Integer userId) {
+                return requestRepository.findByUserUserId(userId);
+        }
 
-        // Create request with PENDING status and current timestamp
-        Request request = Request.builder()
-                .user(user)
-                .type(dto.getType())
-                .fromDate(dto.getFromDate())
-                .toDate(dto.getToDate())
-                .reason(dto.getReason())
-                .status(RequestStatus.PENDING)
-                .createdAt(LocalDateTime.now())
-                .build();
+        @Override
+        public List<Request> getAllRequests() {
+                return requestRepository.findAll();
+        }
 
-        return requestRepository.save(request);
-    }
+        @Override
+        @Transactional
+        public Request approveRequest(Integer requestId) {
+                Request request = requestRepository.findById(requestId)
+                                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy yêu cầu"));
 
-    @Override
-    public List<Request> getRequestsByUserId(Integer userId) {
-        return requestRepository.findByUserUserId(userId);
-    }
+                if (request.getStatus() == RequestStatus.APPROVED) {
+                        throw new IllegalStateException("Yêu cầu này đã được duyệt trước đó.");
+                }
+                if (request.getStatus() == RequestStatus.REJECTED) {
+                        throw new IllegalStateException("Yêu cầu này đã bị từ chối trước đó nên không thể duyệt.");
+                }
 
-    @Override
-    public List<Request> getAllRequests() {
-        return requestRepository.findAll();
-    }
-
-    @Override
-    @Transactional
-    public Request approveRequest(Integer requestId) {
-        Request request = requestRepository.findById(requestId)
-                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy yêu cầu"));
-
-        // Nếu là yêu cầu đổi ca, thực hiện update WorkSchedule
-        if (request.getType().name().equals("SHIFT_CHANGE")) {
+                // Nếu là yêu cầu đổi ca, thực hiện update WorkSchedule
+                if (request.getType().name().equals("SHIFT_CHANGE")) {
                         if (request.getWorkDate() == null || request.getTargetShift() == null) {
-                                throw new IllegalArgumentException("Yêu cầu đổi ca không hợp lệ (thiếu dữ liệu ca/ngày làm)");
+                                throw new IllegalArgumentException(
+                                                "Yêu cầu đổi ca không hợp lệ (thiếu dữ liệu ca/ngày làm)");
                         }
 
                         Shift sourceShift = request.getShift();
@@ -86,13 +94,14 @@ public class RequestServiceImpl implements RequestService {
                                 throw new IllegalArgumentException("Ca muốn đổi phải khác ca hiện tại");
                         }
 
-            // Tìm WorkSchedule cần update (theo userId, workDate, và shiftId cũ)
-            WorkSchedule workSchedule = workScheduleRepository
-                    .findByUserUserIdAndWorkDateAndShiftShiftId(
-                            request.getUser().getUserId(),
-                            request.getWorkDate(),
+                        // Tìm WorkSchedule cần update (theo userId, workDate, và shiftId cũ)
+                        WorkSchedule workSchedule = workScheduleRepository
+                                        .findByUserUserIdAndWorkDateAndShiftShiftId(
+                                                        request.getUser().getUserId(),
+                                                        request.getWorkDate(),
                                                         sourceShift.getShiftId())
-                    .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy lịch làm việc để cập nhật"));
+                                        .orElseThrow(() -> new IllegalArgumentException(
+                                                        "Không tìm thấy lịch làm việc để cập nhật"));
 
                         boolean alreadyHasTargetShift = workScheduleRepository
                                         .existsByUserUserIdAndWorkDateAndShiftShiftId(
@@ -102,79 +111,89 @@ public class RequestServiceImpl implements RequestService {
                         if (alreadyHasTargetShift) {
                                 throw new IllegalArgumentException("Nhân viên đã có ca muốn đổi trong ngày này");
                         }
-            
-            // Update ca làm từ ca cũ (shiftId) sang ca mới (targetShiftId)
-            workSchedule.setShift(request.getTargetShift());
-            workScheduleRepository.save(workSchedule);
+
+                        // Update ca làm từ ca cũ (shiftId) sang ca mới (targetShiftId)
+                        workSchedule.setShift(request.getTargetShift());
+                        workScheduleRepository.save(workSchedule);
+                }
+
+                request.setStatus(RequestStatus.APPROVED);
+                return requestRepository.save(request);
         }
 
-        request.setStatus(RequestStatus.APPROVED);
-        return requestRepository.save(request);
-    }
+        @Override
+        @Transactional
+        public Request rejectRequest(Integer requestId) {
+                Request request = requestRepository.findById(requestId)
+                                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy yêu cầu"));
 
-    @Override
-    @Transactional
-    public Request rejectRequest(Integer requestId) {
-        Request request = requestRepository.findById(requestId)
-                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy yêu cầu"));
-        request.setStatus(RequestStatus.REJECTED);
-        return requestRepository.save(request);
-    }
+                if (request.getStatus() == RequestStatus.REJECTED) {
+                        throw new IllegalStateException("Yêu cầu này đã bị từ chối trước đó.");
+                }
+                if (request.getStatus() == RequestStatus.APPROVED) {
+                        throw new IllegalStateException("Yêu cầu này đã được duyệt trước đó nên không thể từ chối.");
+                }
 
-    @Override
-    public Request getRequestById(Integer requestId) {
-        return requestRepository.findById(requestId)
-                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy yêu cầu"));
-    }
+                request.setStatus(RequestStatus.REJECTED);
+                return requestRepository.save(request);
+        }
 
-    @Override
-    public List<WorkSchedule> getMyWorkSchedules(Integer userId) {
-        return workScheduleRepository.findByUserUserIdOrderByWorkDateAsc(userId);
-    }
+        @Override
+        public Request getRequestById(Integer requestId) {
+                return requestRepository.findById(requestId)
+                                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy yêu cầu"));
+        }
 
-    @Override
-    @Transactional
-    public Request createShiftChangeRequest(Integer userId, ShiftChangeRequestDto dto) {
-        // Validate: ca được chọn phải tồn tại trong WorkSchedules của user
-        WorkSchedule existingSchedule = workScheduleRepository
-                .findByUserUserIdAndWorkDateAndShiftShiftId(userId, dto.getWorkDate(), dto.getShiftId())
-                .orElseThrow(() -> new IllegalArgumentException("Ca làm không tồn tại trong lịch của bạn"));
+        @Override
+        public List<WorkSchedule> getMyWorkSchedules(Integer userId) {
+                return workScheduleRepository.findByUserUserIdOrderByWorkDateAsc(userId);
+        }
 
-        // Find user
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy nhân viên"));
+        @Override
+        @Transactional
+        public Request createShiftChangeRequest(Integer userId, ShiftChangeRequestDto dto) {
+                // Validate: ca được chọn phải tồn tại trong WorkSchedules của user
+                WorkSchedule existingSchedule = workScheduleRepository
+                                .findByUserUserIdAndWorkDateAndShiftShiftId(userId, dto.getWorkDate(), dto.getShiftId())
+                                .orElseThrow(() -> new IllegalArgumentException(
+                                                "Ca làm không tồn tại trong lịch của bạn"));
 
-        // Find shift details
-        Shift currentShift = shiftRepository.findById(dto.getShiftId())
-                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy ca hiện tại"));
+                // Find user
+                User user = userRepository.findById(userId)
+                                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy nhân viên"));
 
-        Shift targetShift = shiftRepository.findById(dto.getTargetShiftId())
-                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy ca muốn đổi"));
+                // Find shift details
+                Shift currentShift = shiftRepository.findById(dto.getShiftId())
+                                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy ca hiện tại"));
+
+                Shift targetShift = shiftRepository.findById(dto.getTargetShiftId())
+                                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy ca muốn đổi"));
 
                 if (currentShift.getShiftId().equals(targetShift.getShiftId())) {
                         throw new IllegalArgumentException("Ca muốn đổi phải khác ca hiện tại");
                 }
 
-                if (workScheduleRepository.existsByUserUserIdAndWorkDateAndShiftShiftId(userId, dto.getWorkDate(), dto.getTargetShiftId())) {
+                if (workScheduleRepository.existsByUserUserIdAndWorkDateAndShiftShiftId(userId, dto.getWorkDate(),
+                                dto.getTargetShiftId())) {
                         throw new IllegalArgumentException("Bạn đã có ca muốn đổi trong ngày này");
                 }
 
-        // Create shift change request
-        // Note: For SHIFT_CHANGE requests, fromDate and toDate are set to workDate
-        // to satisfy database NOT NULL constraints
-        Request request = Request.builder()
-                .user(user)
-                .type(CCPTMT.DoAn.QuanLyCaLam.entity.enums.RequestType.SHIFT_CHANGE)
-                .fromDate(dto.getWorkDate())  // Set to workDate
-                .toDate(dto.getWorkDate())    // Set to workDate
-                .workDate(dto.getWorkDate())
-                .shift(currentShift)
-                .targetShift(targetShift)
-                .reason(dto.getReason())
-                .status(RequestStatus.PENDING)
-                .createdAt(LocalDateTime.now())
-                .build();
+                // Create shift change request
+                // Note: For SHIFT_CHANGE requests, fromDate and toDate are set to workDate
+                // to satisfy database NOT NULL constraints
+                Request request = Request.builder()
+                                .user(user)
+                                .type(CCPTMT.DoAn.QuanLyCaLam.entity.enums.RequestType.SHIFT_CHANGE)
+                                .fromDate(dto.getWorkDate()) // Set to workDate
+                                .toDate(dto.getWorkDate()) // Set to workDate
+                                .workDate(dto.getWorkDate())
+                                .shift(currentShift)
+                                .targetShift(targetShift)
+                                .reason(dto.getReason())
+                                .status(RequestStatus.PENDING)
+                                .createdAt(LocalDateTime.now())
+                                .build();
 
-        return requestRepository.save(request);
-    }
+                return requestRepository.save(request);
+        }
 }

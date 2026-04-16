@@ -3,8 +3,11 @@ package CCPTMT.DoAn.QuanLyCaLam.controller;
 import CCPTMT.DoAn.QuanLyCaLam.entity.Shift;
 import CCPTMT.DoAn.QuanLyCaLam.entity.User;
 import CCPTMT.DoAn.QuanLyCaLam.entity.WorkSchedule;
+import CCPTMT.DoAn.QuanLyCaLam.dto.SessionUserDto;
+import CCPTMT.DoAn.QuanLyCaLam.entity.enums.Role;
 import CCPTMT.DoAn.QuanLyCaLam.service.ShiftService;
 import CCPTMT.DoAn.QuanLyCaLam.service.WorkScheduleService;
+import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.stereotype.Controller;
@@ -14,7 +17,6 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.time.DayOfWeek;
 import java.time.LocalDate;
-import java.time.temporal.TemporalAdjusters;
 import java.util.*;
 
 @Controller
@@ -29,7 +31,13 @@ public class WorkScheduleController {
 
     // ===== ASSIGN SHIFT =====
     @GetMapping("/assign")
-    public String assignForm(Model model) {
+    public String assignForm(HttpSession session, Model model) {
+        SessionUserDto sessionUser = getAdminSessionUser(session);
+        if (sessionUser == null) {
+            return "redirect:/login";
+        }
+
+        model.addAttribute("sessionUser", sessionUser);
         model.addAttribute("users", workScheduleService.getAllEmployees());
         model.addAttribute("shifts", shiftService.getAllShifts());
         model.addAttribute("formAction", "/admin/schedule/assign");
@@ -40,7 +48,18 @@ public class WorkScheduleController {
     public String assign(@RequestParam Integer userId,
             @RequestParam Integer shiftId,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate workDate,
+            HttpSession session,
             RedirectAttributes ra) {
+
+        SessionUserDto sessionUser = getAdminSessionUser(session);
+        if (sessionUser == null) {
+            return "redirect:/login";
+        }
+
+        if (userId == null || shiftId == null || workDate == null) {
+            ra.addFlashAttribute("error", "Vui lòng chọn đầy đủ nhân viên, ca làm và ngày làm.");
+            return "redirect:/admin/schedule/assign";
+        }
 
         try {
             workScheduleService.assignShift(userId, shiftId, workDate);
@@ -58,11 +77,23 @@ public class WorkScheduleController {
             @RequestParam(defaultValue = "daily") String type,
             @RequestParam(required = false) Integer userId,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
+            HttpSession session,
             Model model) {
 
-        LocalDate targetDate = (date != null) ? date : LocalDate.now();
+        SessionUserDto sessionUser = getAdminSessionUser(session);
+        if (sessionUser == null) {
+            return "redirect:/login";
+        }
 
-        switch (type) {
+        model.addAttribute("sessionUser", sessionUser);
+
+        LocalDate targetDate = (date != null) ? date : LocalDate.now();
+        String normalizedType = normalizeViewType(type);
+        if (!normalizedType.equalsIgnoreCase(type)) {
+            model.addAttribute("warning", "Loại hiển thị không hợp lệ, hệ thống đã chuyển về chế độ theo ngày.");
+        }
+
+        switch (normalizedType) {
             case "employee":
                 return viewByEmployee(userId, model);
 
@@ -76,6 +107,13 @@ public class WorkScheduleController {
 
     // ===== VIEW BY EMPLOYEE =====
     private String viewByEmployee(Integer userId, Model model) {
+        if (userId == null) {
+            model.addAttribute("error", "Vui lòng chọn nhân viên để xem lịch làm.");
+            model.addAttribute("schedules", Collections.emptyList());
+            model.addAttribute("viewType", "employee");
+            return "admin/schedule-view";
+        }
+
         List<WorkSchedule> schedules = workScheduleService.getSchedulesByUserId(userId);
 
         model.addAttribute("schedules", schedules);
@@ -132,14 +170,25 @@ public class WorkScheduleController {
     // ===== DELETE =====
     @PostMapping("/{id}/delete")
     public String delete(@PathVariable Integer id,
+            HttpSession session,
             RedirectAttributes ra) {
+        SessionUserDto sessionUser = getAdminSessionUser(session);
+        if (sessionUser == null) {
+            return "redirect:/login";
+        }
+
         ra.addFlashAttribute("error", "Chức năng xóa phân ca đã bị khóa. Vui lòng dùng Sửa.");
 
         return "redirect:/admin/schedule";
     }
 
     @GetMapping("/{id}/edit")
-    public String editForm(@PathVariable Integer id, Model model, RedirectAttributes ra) {
+    public String editForm(@PathVariable Integer id, HttpSession session, Model model, RedirectAttributes ra) {
+        SessionUserDto sessionUser = getAdminSessionUser(session);
+        if (sessionUser == null) {
+            return "redirect:/login";
+        }
+
         Optional<WorkSchedule> scheduleOpt = workScheduleService.getScheduleById(id);
         if (scheduleOpt.isEmpty()) {
             ra.addFlashAttribute("error", "Không tìm thấy phân ca để sửa.");
@@ -147,6 +196,7 @@ public class WorkScheduleController {
         }
 
         WorkSchedule schedule = scheduleOpt.get();
+        model.addAttribute("sessionUser", sessionUser);
         model.addAttribute("users", workScheduleService.getAllEmployees());
         model.addAttribute("shifts", shiftService.getAllShifts());
         model.addAttribute("selectedUserId", schedule.getUser().getUserId());
@@ -161,7 +211,18 @@ public class WorkScheduleController {
             @RequestParam Integer userId,
             @RequestParam Integer shiftId,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate workDate,
+            HttpSession session,
             RedirectAttributes ra) {
+
+        SessionUserDto sessionUser = getAdminSessionUser(session);
+        if (sessionUser == null) {
+            return "redirect:/login";
+        }
+
+        if (userId == null || shiftId == null || workDate == null) {
+            ra.addFlashAttribute("error", "Vui lòng chọn đầy đủ nhân viên, ca làm và ngày làm.");
+            return "redirect:/admin/schedule/" + id + "/edit";
+        }
 
         try {
             workScheduleService.updateSchedule(id, userId, shiftId, workDate);
@@ -176,7 +237,14 @@ public class WorkScheduleController {
     @GetMapping("/daily")
     public String viewDaily(
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
+            HttpSession session,
             Model model) {
+        SessionUserDto sessionUser = getAdminSessionUser(session);
+        if (sessionUser == null) {
+            return "redirect:/login";
+        }
+
+        model.addAttribute("sessionUser", sessionUser);
         LocalDate targetDate = (date != null) ? date : LocalDate.now();
         return viewByDay(targetDate, model);
     }
@@ -184,8 +252,33 @@ public class WorkScheduleController {
     @GetMapping("/weekly")
     public String viewWeekly(
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
+            HttpSession session,
             Model model) {
+        SessionUserDto sessionUser = getAdminSessionUser(session);
+        if (sessionUser == null) {
+            return "redirect:/login";
+        }
+
+        model.addAttribute("sessionUser", sessionUser);
         LocalDate targetDate = (date != null) ? date : LocalDate.now();
         return viewByWeek(targetDate, model);
+    }
+
+    private SessionUserDto getAdminSessionUser(HttpSession session) {
+        SessionUserDto sessionUser = (SessionUserDto) session.getAttribute(LoginController.SESSION_USER_KEY);
+        if (sessionUser == null || sessionUser.getRole() != Role.ADMIN) {
+            return null;
+        }
+        return sessionUser;
+    }
+
+    private String normalizeViewType(String type) {
+        if ("employee".equalsIgnoreCase(type)) {
+            return "employee";
+        }
+        if ("weekly".equalsIgnoreCase(type)) {
+            return "weekly";
+        }
+        return "daily";
     }
 }

@@ -14,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.DayOfWeek;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.temporal.TemporalAdjusters;
 import java.util.*;
@@ -64,13 +65,18 @@ public class WorkScheduleService {
         if (user.getRole() != Role.USER) {
             throw new IllegalArgumentException("Chỉ được phân ca cho nhân viên (USER)");
         }
+        if (!Boolean.TRUE.equals(user.getStatus())) {
+            throw new IllegalArgumentException("Nhân viên đã ngừng hoạt động, không thể phân ca.");
+        }
         Shift shift = shiftRepository.findById(shiftId)
                 .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy ca làm"));
+
+        validateScheduleDateTimeNotPast(workDate, shift);
 
         // Kiểm tra trùng ca: cùng nhân viên + cùng ngày + cùng ca
         if (workScheduleRepository.existsByUserUserIdAndWorkDateAndShiftShiftId(userId, workDate, shiftId)) {
             throw new IllegalArgumentException(
-                "Nhân viên đã được phân ca '" + shift.getShiftName() + "' vào ngày này rồi.");
+                    "Nhân viên đã được phân ca '" + shift.getShiftName() + "' vào ngày này rồi.");
         }
 
         // Kiểm tra trùng giờ: ca mới có bị chồng giờ với ca hiện tại không
@@ -78,19 +84,19 @@ public class WorkScheduleService {
                 .findByUserUserIdAndWorkDate(userId, workDate);
 
         LocalTime newStart = shift.getStartTime();
-        LocalTime newEnd   = shift.getEndTime();
+        LocalTime newEnd = shift.getEndTime();
 
         for (WorkSchedule existing : existingOnDay) {
             LocalTime exStart = existing.getShift().getStartTime();
-            LocalTime exEnd   = existing.getShift().getEndTime();
+            LocalTime exEnd = existing.getShift().getEndTime();
 
             // Chồng giờ nếu: newStart < exEnd && newEnd > exStart
             boolean overlaps = newStart.isBefore(exEnd) && newEnd.isAfter(exStart);
             if (overlaps) {
                 throw new IllegalArgumentException(
-                    "Ca '" + shift.getShiftName() + "' (" + newStart + "-" + newEnd + ")" +
-                    " bị trùng giờ với ca '" + existing.getShift().getShiftName() +
-                    "' (" + exStart + "-" + exEnd + ").");
+                        "Ca '" + shift.getShiftName() + "' (" + newStart + "-" + newEnd + ")" +
+                                " bị trùng giờ với ca '" + existing.getShift().getShiftName() +
+                                "' (" + exStart + "-" + exEnd + ").");
             }
         }
 
@@ -104,8 +110,8 @@ public class WorkScheduleService {
         } catch (DataIntegrityViolationException e) {
             // Fallback nếu DB constraint cũ vẫn tồn tại hoặc race condition
             throw new IllegalArgumentException(
-                "Nhân viên đã được phân ca '" + shift.getShiftName() +
-                "' vào ngày " + workDate + " rồi.");
+                    "Nhân viên đã được phân ca '" + shift.getShiftName() +
+                            "' vào ngày " + workDate + " rồi.");
         }
     }
 
@@ -124,8 +130,13 @@ public class WorkScheduleService {
         if (user.getRole() != Role.USER) {
             throw new IllegalArgumentException("Chỉ được phân ca cho nhân viên (USER)");
         }
+        if (!Boolean.TRUE.equals(user.getStatus())) {
+            throw new IllegalArgumentException("Nhân viên đã ngừng hoạt động, không thể phân ca.");
+        }
         Shift shift = shiftRepository.findById(shiftId)
                 .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy ca làm"));
+
+        validateScheduleDateTimeNotPast(workDate, shift);
 
         Optional<WorkSchedule> duplicateSchedule = workScheduleRepository
                 .findByUserUserIdAndWorkDateAndShiftShiftId(userId, workDate, shiftId);
@@ -166,7 +177,7 @@ public class WorkScheduleService {
     }
 
     public List<User> getAllEmployees() {
-        return userRepository.findAllByRoleOrderByUserIdDesc(Role.USER);
+        return userRepository.findAllByRoleAndStatusOrderByUserIdDesc(Role.USER, Boolean.TRUE);
     }
 
     public List<Shift> getAllShifts() {
@@ -181,5 +192,12 @@ public class WorkScheduleService {
     public Map<Integer, List<WorkSchedule>> groupSchedulesByUser(List<WorkSchedule> schedules) {
         return schedules.stream()
                 .collect(Collectors.groupingBy(s -> s.getUser().getUserId()));
+    }
+
+    private void validateScheduleDateTimeNotPast(LocalDate workDate, Shift shift) {
+        LocalDateTime scheduleStartDateTime = LocalDateTime.of(workDate, shift.getStartTime());
+        if (scheduleStartDateTime.isBefore(LocalDateTime.now())) {
+            throw new IllegalArgumentException("Ngày đã qua rồi, không thể phân ca trong quá khứ.");
+        }
     }
 }
