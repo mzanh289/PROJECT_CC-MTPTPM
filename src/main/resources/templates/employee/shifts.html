@@ -279,6 +279,25 @@
             color: #6b7280;
         }
 
+        .inline-alert {
+            border-radius: 10px;
+            padding: 10px 14px;
+            margin-bottom: 16px;
+            font-weight: 600;
+        }
+
+        .inline-alert--error {
+            background: #fef2f2;
+            color: #991b1b;
+            border: 1px solid #fecaca;
+        }
+
+        .inline-alert--warning {
+            background: #fffbeb;
+            color: #92400e;
+            border: 1px solid #fcd34d;
+        }
+
         @media (max-width: 900px) {
             .week-grid {
                 grid-template-columns: repeat(2, 1fr);
@@ -286,6 +305,7 @@
         }
 
         @media (max-width: 600px) {
+
             .schedule-shell,
             .hero-panel,
             .surface-card {
@@ -310,6 +330,11 @@
             </div>
         </header>
 
+        <div class="surface-card" th:if="${error != null or warning != null}">
+            <div th:if="${error != null}" class="inline-alert inline-alert--error" th:text="${error}"></div>
+            <div th:if="${warning != null}" class="inline-alert inline-alert--warning" th:text="${warning}"></div>
+        </div>
+
         <div class="surface-card">
             <div class="view-toggle">
                 <a class="view-btn" th:classappend="${viewType == 'daily'} ? ' is-active' : ''"
@@ -326,7 +351,8 @@
                 <span class="current-date" th:if="${viewType == 'daily'}"
                     th:text="${#temporals.format(targetDate, 'EEEE, dd/MM/yyyy')}">Thứ Hai, 01/01/2024</span>
                 <span class="current-date" th:if="${viewType == 'weekly'}"
-                    th:text="${#temporals.format(weekStart, 'dd/MM/yyyy')} + ' - ' + ${#temporals.format(weekEnd, 'dd/MM/yyyy')}">01/01 - 07/01/2024</span>
+                    th:text="${#temporals.format(weekStart, 'dd/MM/yyyy')} + ' - ' + ${#temporals.format(weekEnd, 'dd/MM/yyyy')}">01/01
+                    - 07/01/2024</span>
                 <a class="date-nav-btn" th:if="${viewType == 'daily'}"
                     th:href="@{/employee/shifts(type='daily',date=${targetDate.plusDays(1)})}">Sau →</a>
                 <a class="date-nav-btn" th:if="${viewType == 'weekly'}"
@@ -376,8 +402,8 @@
                                 <th:block th:if="${dayShifts != null and not #lists.isEmpty(dayShifts)}">
                                     <div th:each="item : ${dayShifts}" class="shift-item">
                                         <div class="shift-employee" th:text="${item.shiftName}">Ca sáng</div>
-                                        <div class="shift-time"
-                                            th:text="${item.startTime} + ' - ' + ${item.endTime}">08:00 - 17:00</div>
+                                        <div class="shift-time" th:text="${item.startTime} + ' - ' + ${item.endTime}">
+                                            08:00 - 17:00</div>
                                     </div>
                                 </th:block>
                                 <div th:if="${dayShifts == null or #lists.isEmpty(dayShifts)}" class="no-shift">

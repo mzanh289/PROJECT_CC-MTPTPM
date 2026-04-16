@@ -40,38 +40,54 @@ public class EmployeeShiftController {
         }
 
         LocalDate targetDate = (date != null) ? date : LocalDate.now();
-        List<EmployeeShiftItemDto> shifts;
+        List<EmployeeShiftItemDto> shifts = new ArrayList<>();
+        String normalizedType = normalizeType(type);
+        if (!normalizedType.equalsIgnoreCase(type)) {
+            model.addAttribute("warning", "Kiểu xem không hợp lệ, hệ thống đã chuyển sang chế độ theo tuần.");
+        }
+
         model.addAttribute("pageTitle", "Ca làm của tôi");
         model.addAttribute("sessionUser", sessionUser);
-        model.addAttribute("viewType", type);
+        model.addAttribute("viewType", normalizedType);
         model.addAttribute("targetDate", targetDate);
         model.addAttribute("today", LocalDate.now());
 
-        if ("daily".equalsIgnoreCase(type)) {
-            shifts = employeeShiftService.findByUserIdAndDate(sessionUser.getUserId(), targetDate);
-        } else {
-            LocalDate startOfWeek = targetDate.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
-            LocalDate endOfWeek = startOfWeek.plusDays(6);
-            shifts = employeeShiftService.findByUserIdAndWeek(sessionUser.getUserId(), targetDate);
+        try {
+            if ("daily".equalsIgnoreCase(normalizedType)) {
+                shifts = employeeShiftService.findByUserIdAndDate(sessionUser.getUserId(), targetDate);
+            } else {
+                LocalDate startOfWeek = targetDate.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
+                LocalDate endOfWeek = startOfWeek.plusDays(6);
+                shifts = employeeShiftService.findByUserIdAndWeek(sessionUser.getUserId(), targetDate);
 
-            List<LocalDate> weekDays = new ArrayList<>();
-            Map<LocalDate, List<EmployeeShiftItemDto>> schedulesByDate = new LinkedHashMap<>();
-            for (int i = 0; i < 7; i++) {
-                LocalDate day = startOfWeek.plusDays(i);
-                weekDays.add(day);
-                schedulesByDate.put(day, new ArrayList<>());
-            }
-            for (EmployeeShiftItemDto shift : shifts) {
-                schedulesByDate.get(shift.getWorkDate()).add(shift);
-            }
+                List<LocalDate> weekDays = new ArrayList<>();
+                Map<LocalDate, List<EmployeeShiftItemDto>> schedulesByDate = new LinkedHashMap<>();
+                for (int i = 0; i < 7; i++) {
+                    LocalDate day = startOfWeek.plusDays(i);
+                    weekDays.add(day);
+                    schedulesByDate.put(day, new ArrayList<>());
+                }
+                for (EmployeeShiftItemDto shift : shifts) {
+                    schedulesByDate.get(shift.getWorkDate()).add(shift);
+                }
 
-            model.addAttribute("weekDays", weekDays);
-            model.addAttribute("weekStart", startOfWeek);
-            model.addAttribute("weekEnd", endOfWeek);
-            model.addAttribute("schedulesByDate", schedulesByDate);
+                model.addAttribute("weekDays", weekDays);
+                model.addAttribute("weekStart", startOfWeek);
+                model.addAttribute("weekEnd", endOfWeek);
+                model.addAttribute("schedulesByDate", schedulesByDate);
+            }
+        } catch (Exception ex) {
+            model.addAttribute("error", "Không thể tải lịch ca làm lúc này. Vui lòng thử lại sau.");
         }
 
         model.addAttribute("shifts", shifts);
         return "employee/shifts";
+    }
+
+    private String normalizeType(String type) {
+        if ("daily".equalsIgnoreCase(type)) {
+            return "daily";
+        }
+        return "weekly";
     }
 }

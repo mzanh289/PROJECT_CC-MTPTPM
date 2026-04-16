@@ -63,6 +63,27 @@
             font-size: 14px;
         }
 
+        .sf-alert {
+            border-radius: 12px;
+            padding: 11px 14px;
+            margin-bottom: 16px;
+            font-size: 14px;
+            font-weight: 600;
+            border: 1px solid transparent;
+        }
+
+        .sf-alert--error {
+            background: #fef2f2;
+            color: #991b1b;
+            border-color: #fecaca;
+        }
+
+        .sf-alert--success {
+            background: #ecfdf5;
+            color: #065f46;
+            border-color: #a7f3d0;
+        }
+
         .sf-back {
             display: inline-flex;
             align-items: center;
@@ -408,6 +429,10 @@
                 <p class="sf-section-label"><i class="fa-solid fa-pen-to-square"
                         style="color:#a78bfa; margin-right:6px;"></i>Thông tin ca làm</p>
 
+                <div th:if="${error != null}" class="sf-alert sf-alert--error" th:text="${error}"></div>
+                <div th:if="${success != null}" class="sf-alert sf-alert--success" th:text="${success}"></div>
+                <div id="clientError" class="sf-alert sf-alert--error" style="display:none;"></div>
+
                 <form th:action="${formAction}" method="post" id="shiftForm">
 
                     <!-- Tên ca -->
@@ -531,6 +556,8 @@
         const prevDuration = document.getElementById('prevDuration');
         const prevBadge = document.getElementById('prevBadge');
         const prevBadgeText = document.getElementById('prevBadgeText');
+        const form = document.getElementById('shiftForm');
+        const clientError = document.getElementById('clientError');
 
         function toMinutes(t) {
             if (!t) return null;
@@ -567,7 +594,7 @@
             const eMin = toMinutes(endInput.value);
             let dur = null;
             if (sMin !== null && eMin !== null) {
-                dur = eMin > sMin ? eMin - sMin : (eMin + 1440 - sMin);
+                dur = eMin > sMin ? eMin - sMin : null;
             }
             prevDuration.textContent = fmtDuration(dur);
 
@@ -581,6 +608,20 @@
         nameInput.addEventListener('input', updatePreview);
         startInput.addEventListener('change', updatePreview);
         endInput.addEventListener('change', updatePreview);
+
+        form.addEventListener('submit', function (e) {
+            clientError.style.display = 'none';
+            clientError.textContent = '';
+
+            const sMin = toMinutes(startInput.value);
+            const eMin = toMinutes(endInput.value);
+            if (sMin !== null && eMin !== null && sMin >= eMin) {
+                e.preventDefault();
+                clientError.textContent = 'Giờ bắt đầu phải trước giờ kết thúc.';
+                clientError.style.display = 'block';
+                clientError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+        });
 
         // Khởi tạo preview với giá trị sẵn có (khi edit)
         updatePreview();
