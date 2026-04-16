@@ -66,6 +66,25 @@
             justify-content: center;
         }
 
+        .report-alert {
+            border-radius: 10px;
+            padding: 10px 14px;
+            font-weight: 600;
+            border: 1px solid transparent;
+        }
+
+        .report-alert--error {
+            background: #fef2f2;
+            color: #991b1b;
+            border-color: #fecaca;
+        }
+
+        .report-alert--warning {
+            background: #fffbeb;
+            color: #92400e;
+            border-color: #fcd34d;
+        }
+
         .btn-primary {
             background: #0f172a;
             color: #ffffff;
@@ -204,6 +223,9 @@
     </style>
 
     <div class="report-shell">
+        <div th:if="${error != null}" class="report-alert report-alert--error" th:text="${error}"></div>
+        <div th:if="${warning != null}" class="report-alert report-alert--warning" th:text="${warning}"></div>
+
         <form class="report-filter-card" th:action="@{/admin/reports}" method="get">
             <div class="report-input">
                 <label for="period">Kỳ báo cáo</label>
@@ -271,15 +293,18 @@
                     </thead>
                     <tbody>
                         <tr th:if="${#lists.isEmpty(reportData.rows)}">
-                            <td colspan="7" style="text-align:center; color:#64748b;">Không có dữ liệu trong kỳ đã chọn</td>
+                            <td colspan="7" style="text-align:center; color:#64748b;">Không có dữ liệu trong kỳ đã chọn
+                            </td>
                         </tr>
                         <tr th:each="row : ${reportData.rows}">
                             <td th:text="${#temporals.format(row.workDate, 'dd/MM/yyyy')}">01/01/2026</td>
                             <td th:text="${row.userId}">1</td>
                             <td th:text="${row.fullName}">Nguyen Van A</td>
                             <td th:text="${row.shiftNames}">Ca sang</td>
-                            <td th:text="${row.checkIn != null ? #temporals.format(row.checkIn, 'HH:mm') : '-'}">08:00</td>
-                            <td th:text="${row.checkOut != null ? #temporals.format(row.checkOut, 'HH:mm') : '-'}">17:00</td>
+                            <td th:text="${row.checkIn != null ? #temporals.format(row.checkIn, 'HH:mm') : '-'}">08:00
+                            </td>
+                            <td th:text="${row.checkOut != null ? #temporals.format(row.checkOut, 'HH:mm') : '-'}">17:00
+                            </td>
                             <td>
                                 <span class="status-chip"
                                     th:classappend="${row.status.name() == 'DI_LAM' ? ' chip-ontime' : (row.status.name() == 'TRE' ? ' chip-late' : ' chip-absent')}"
@@ -294,10 +319,10 @@
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
     <script th:inline="javascript">
-        const labels = /*[[${reportData.chartLabels}]]*/ [];
-        const onTimeSeries = /*[[${reportData.onTimeSeries}]]*/ [];
-        const lateSeries = /*[[${reportData.lateSeries}]]*/ [];
-        const absentSeries = /*[[${reportData.absentSeries}]]*/ [];
+        const labels = /*[[${reportData.chartLabels}]]*/[];
+        const onTimeSeries = /*[[${reportData.onTimeSeries}]]*/[];
+        const lateSeries = /*[[${reportData.lateSeries}]]*/[];
+        const absentSeries = /*[[${reportData.absentSeries}]]*/[];
 
         const ctx = document.getElementById('attendanceChart');
         if (ctx) {

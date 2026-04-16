@@ -54,7 +54,7 @@ public class AdminUserServiceImpl implements AdminUserService {
                 .email(dto.getEmail().trim().toLowerCase())
                 .password(dto.getPassword())
                 .phone(dto.getPhone())
-            .role(Role.USER)
+                .role(Role.USER)
                 .status(dto.getStatus())
                 .build();
 
@@ -83,6 +83,11 @@ public class AdminUserServiceImpl implements AdminUserService {
     @Override
     public void delete(Integer userId) {
         User user = getUserRoleRecord(userId);
+
+        if (!Boolean.TRUE.equals(user.getStatus())) {
+            throw new IllegalArgumentException("User đã không hoạt động rồi.");
+        }
+
         user.setStatus(Boolean.FALSE);
         userRepository.save(user);
     }

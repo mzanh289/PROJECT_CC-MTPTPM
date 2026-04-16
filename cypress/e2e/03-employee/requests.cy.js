@@ -1,5 +1,5 @@
-describe("Employee requests", () => {
-  it("creates a leave request", () => {
+describe("Nhân viên - Quản lý yêu cầu", () => {
+  it("Tạo yêu cầu nghỉ phép thành công", () => {
     const tomorrow = new Date();
     tomorrow.setDate(tomorrow.getDate() + 1);
 
