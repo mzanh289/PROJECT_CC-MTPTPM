@@ -14,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.DayOfWeek;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.temporal.TemporalAdjusters;
 import java.util.*;
@@ -69,6 +70,8 @@ public class WorkScheduleService {
         }
         Shift shift = shiftRepository.findById(shiftId)
                 .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy ca làm"));
+
+        validateScheduleDateTimeNotPast(workDate, shift);
 
         // Kiểm tra trùng ca: cùng nhân viên + cùng ngày + cùng ca
         if (workScheduleRepository.existsByUserUserIdAndWorkDateAndShiftShiftId(userId, workDate, shiftId)) {
@@ -133,6 +136,8 @@ public class WorkScheduleService {
         Shift shift = shiftRepository.findById(shiftId)
                 .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy ca làm"));
 
+        validateScheduleDateTimeNotPast(workDate, shift);
+
         Optional<WorkSchedule> duplicateSchedule = workScheduleRepository
                 .findByUserUserIdAndWorkDateAndShiftShiftId(userId, workDate, shiftId);
         if (duplicateSchedule.isPresent() && !duplicateSchedule.get().getScheduleId().equals(scheduleId)) {
@@ -187,5 +192,12 @@ public class WorkScheduleService {
     public Map<Integer, List<WorkSchedule>> groupSchedulesByUser(List<WorkSchedule> schedules) {
         return schedules.stream()
                 .collect(Collectors.groupingBy(s -> s.getUser().getUserId()));
+    }
+
+    private void validateScheduleDateTimeNotPast(LocalDate workDate, Shift shift) {
+        LocalDateTime scheduleStartDateTime = LocalDateTime.of(workDate, shift.getStartTime());
+        if (scheduleStartDateTime.isBefore(LocalDateTime.now())) {
+            throw new IllegalArgumentException("Ngày đã qua rồi, không thể phân ca trong quá khứ.");
+        }
     }
 }
